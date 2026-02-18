@@ -45,8 +45,7 @@ chmod +x co2do
   Unicode version of the program instead of writing to a .DO file.
   (Requires the [tandy-200.charmap file][charmap] from
   [hackerb9/tandy-locale][tandy-locale].)
-
-![Example of -t output][charmapimg]
+  ![Example of -t output][charmapimg]
 
 [charmap]: https://raw.githubusercontent.com/hackerb9/co2do/main/tandy-200.charmap
 [charmapimg]: README.md.d/charmapimg.png
