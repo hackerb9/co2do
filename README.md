@@ -23,9 +23,9 @@ chmod +x co2do
 ./co2do FOO.CO
 ```
 
-> Technically it a bash shell script that depends on UNIX tools like
-> `od` and `awk`, so any POSIX-compliant system with bash will work.
-> (Linux definitely, BSD should, MacOS could, WSL ???).
+> This script depends on UNIX tools like `od` and `awk`, so any
+> POSIX-compliant system with bash can work. (Linux definitely, BSD
+> should, MacOS could, WSL ???).
 
 ## Features
 
