@@ -53,12 +53,48 @@ chmod +x co2do
 [tandy-locale]: https://github.com/hackerb9/tandy-locale/
 
 
-## Todo:
+## Todo
 
 * Move length check out of BASIC code to save space.
 
 * Prevent POKEing to bad parts of RAM.
   (E.g., `POKE Q` where `Q<HIMEM` or `Q>=MAXRAM`).
+
+## Misfeatures
+
+* The shell script could, but does not yet, emit a warning if the
+  created .CO file would not run on certain machines. (For example if
+  TOP<=57777 on 8K machines or END>=61104 on a TANDY 200).  
+  It could also adjust the string allocation in CLEAR to be less if need be.
+
+* Despite having better compression than the usual HEX encoding, it
+  still uses too much memory:
+  * The increase in filesize makes it unusable for even middling sized
+    .CO programs on 8K machines.
+  * The BASIC loader could be shorter.
+  * If loaded using RUN "COM:...", the machine language program is in
+    memory twice, once in the DATA statements of the BASIC program and
+    a second time as the M/L executable in high memory.
+  * If loaded first as a .DO file and then RUN, the program is in
+    memory three times: the .DO file is separate from the tokenized
+    BASIC program which is created automatically on RUN.
+  * I do not know how to run NEW (possibly KILL?) to clear up memory
+	before using CALL in a platform independent way.
+* It ought to give better instructions for how to use it.
+
+## Future directions:
+
+1. An actual compression algorithm, like Lempel-Ziv, if it can be done
+   in a short enough program.
+2. An assembly level compressor.
+3. A universal serial loader which can load a .CO file from "COM:" on
+   any Model-T.
+
+Number 3 may be the best way forward as it should not take up too much
+space to be compatible with all variants. Despite the dialect
+differences, it should be possible: the NEC N82 BASIC manual
+specifically states that it is no problem to have syntax errors in
+code that is not executed.
 
 ## See also
 
