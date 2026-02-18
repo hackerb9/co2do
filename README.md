@@ -12,13 +12,13 @@ to the correct address using POKE and then start it.
 
 ## Installation
 
-It's just a shell script. Just [download][co2do] it, mark it executable, and
+It's just a shell script. Just [download co2do][co2do], mark it executable, and
 run it.
 
-[co2do] co2do
+[co2do]: https://raw.githubusercontent.com/hackerb9/co2do/main/co2do
 
 ``` shell
-wget https://github.com/hackerb9/co2do/co2do
+wget https://raw.githubusercontent.com/hackerb9/co2do/main/co2do
 chmod +x co2do
 ./co2do FOO.CO
 ```
@@ -39,7 +39,12 @@ chmod +x co2do
 
 * As a special bonus, if you use the -t option, it will display a
   Unicode version of the program instead of writing to a .DO file.
-  (Requires the tandy-200.charmap file from hackerb9/tandy-locale.)
+  (Requires the [tandy-200.charmap file][charmap] from
+  [hackerb9/tandy-locale][tandy-locale].)
+
+[charmap]: https://raw.githubusercontent.com/hackerb9/co2do/main/tandy-200.charmap
+[tandy-locale]: https://github.com/hackerb9/tandy-locale/
+
 
 ## Todo:
 
