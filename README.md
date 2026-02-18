@@ -13,7 +13,7 @@ to the correct address using POKE and then start it.
 ## Installation
 
 It's just a shell script. Just [download co2do][co2do], mark it executable, and
-run it.
+run it on any UNIX-ish operating system.
 
 [co2do]: https://raw.githubusercontent.com/hackerb9/co2do/main/co2do
 
@@ -22,6 +22,10 @@ wget https://raw.githubusercontent.com/hackerb9/co2do/main/co2do
 chmod +x co2do
 ./co2do FOO.CO
 ```
+
+> Technically it a bash shell script that depends on UNIX tools like
+> `od` and `awk`, so any POSIX-compliant system with bash will work.
+> (Linux definitely, BSD should, MacOS could, WSL ???).
 
 ## Features
 
@@ -42,7 +46,11 @@ chmod +x co2do
   (Requires the [tandy-200.charmap file][charmap] from
   [hackerb9/tandy-locale][tandy-locale].)
 
+![Example of -t output][charmapimg]
+
 [charmap]: https://raw.githubusercontent.com/hackerb9/co2do/main/tandy-200.charmap
+[charmapimg]: README.md.d/charmapimg.png
+
 [tandy-locale]: https://github.com/hackerb9/tandy-locale/
 
 
