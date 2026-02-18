@@ -30,7 +30,7 @@ chmod +x co2do
 ## Features
 
 * Inspired by Stephen Adolph's efficient encoding scheme which
-  increases storage size by at most 2x + k (where k is approx. 600),
+  increases storage size by at most 2x + k (where k is approx. 500),
   and on average closer to 1.3x + k.
 
 * Works on any of the Kyotronic Sisters: 
