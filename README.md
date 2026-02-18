@@ -12,8 +12,8 @@ to the correct address using POKE and then start it.
 
 ## Installation
 
-It's just a shell script. Just [download co2do][co2do], mark it executable, and
-run it on any UNIX-ish operating system.
+It's just a shell script. Simply [download co2do][co2do], mark it
+executable, and run it on any UNIX-ish operating system.
 
 [co2do]: https://raw.githubusercontent.com/hackerb9/co2do/main/co2do
 
