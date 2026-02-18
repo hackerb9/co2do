@@ -48,3 +48,11 @@ chmod +x co2do
 * Prevent POKEing to bad parts of RAM.
   (E.g., `POKE Q` where `Q<HIMEM` or `Q>=MAXRAM`).
 
+## See also
+
+* Brian K. White includes in his dl2 project a very nice
+  [co2ba.sh][co2ba] program which is similar but has different
+  features. It allows one to specify the loading address and a comment
+  on the command line.
+
+[co2ba]: https://github.com/bkw777/dl2/blob/master/co2ba.md
