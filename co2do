@@ -45,28 +45,30 @@ function main() {
     LEN=$3+$4*256
     EXE=$5+$6*256
     shift 6
-cat<<EOF >&2
-TOP: $TOP
-END: $((TOP+LEN))
-EXE: $EXE
-EOF
-cat <<EOF
-10 CLEAR 10, $TOP
-20 TP=$TOP: LN=$LEN: EX=$EXE
-30 GOSUB 13000
-40 IF PEEK(1)<>148 THEN CALL EX ELSE EXEC EX
-50 END
-13000 'Decode ML
-13010 CLS:Q=$TOP:H$=CHR\$(27)+"H"
-13020 ?H$"       / $((TOP+LEN-1)) $input"
-EOF
+    cat<<-EOF >&2
+	TOP: $TOP
+	END: $((TOP+LEN))
+	EXE: $EXE
+	EOF
+    cat <<-EOF
+	10 CLEAR 5, $TOP
+	20 TP=$TOP: LN=$LEN: EX=$EXE
+	30 GOSUB 13000
+	40 IF PEEK(1)<>148 THEN CALL EX ELSE EXEC EX
+	50 END
+	13000 'Decode ML
+	13010 CLS:Q=$TOP:H$=CHR\$(27)+"H"
+	13020 ?H$"       / $((TOP+LEN-1)) $input"
+	EOF
     emitbasicdecode
     printf "14000 '$input"
-    printdata "$@"
+    emitdata "$@"
     printf "\x1A"		# ^Z is EOF for Kyotronic Kin
+    warnmem $TOP $LEN $EXE $#
+    return			# Return result from warnmem
 }
 
-function printdata() {
+function emitdata() {
     local -i linenum=14000 
     local -i v
     for v; do
@@ -95,15 +97,58 @@ function emitbasicdecode() {
     # * subtract 128 instead of adding it, just for aesthetics.
     # * double check the filesize matches the header length.
     # * do not discard a quoting "/" at the end of a DATA line.
-    cat <<"EOF"
-13030 READP$:FORX=1TOLEN(P$):a$=MID$(P$,X,1)
-13040 if a$="/" then if e=1 then 13080: else e=1: goto 13070
-13050 v=asc(a$): if e=1 then v=v-128: e=0
-13060 ?H$q:POKEQ,v:Q=Q+1
-13070 NEXTx:GOTO13030
-13080 IF LN<>(q-TP) THEN ?:?"Error:",LN"<>"q-TP:END
-13090 RETURN
-EOF
+    cat <<-"EOF"
+	13030 READP$:FORX=1TOLEN(P$):a$=MID$(P$,X,1)
+	13040 if a$="/" then if e=1 then 13080: else e=1: goto 13070
+	13050 v=asc(a$): if e=1 then v=v-128: e=0
+	13060 ?H$q:POKEQ,v:Q=Q+1
+	13070 NEXTx:GOTO13030
+	13080 IF LN<>(q-TP) THEN ?:?"Error:",LN"<>"q-TP:END
+	13090 RETURN
+	EOF
+}
+
+
+function warnmem() {
+    # Print warnings given TOP, LEN, EXE, and size of the ML program
+    local -i top=$1 len=$2 exe=$3 mlsize=$4
+    local -i end=top+len  err=0
+
+    # Sanity check
+    if ((len != mlsize)); then
+	echo "Error: Not a valid .CO file. LEN=$len, but FILESIZE=$mlsize.">&2
+	err=1^err
+    fi
+
+    # due to overhead, this program cannot convert some .CO files to BASIC.
+    if ((top<32768)); then
+	echo "Warning: TOP ($top) is EXTREMELY low and likely invalid." >&2
+	err=err^2
+    elif ((top<59555)); then
+	echo "Warning: TOP ($top) is very low and $output may not work on 8K machines." >&2
+	err=err^4
+    elif ((top<61000)); then
+	cat <<-EOF >&2
+	Note: TOP ($top) is too low for 8K machines to fit both .DO and .BA.
+	To workaround, tokenize directly from a device instead of downloading.
+	For example, RUN "COM:98N1" or RUN "0:$output"
+	EOF
+	err=err^8
+    fi
+
+    # Check if END exceeds MAXRAM
+    if ((end>61104)); then
+	echo "Warning: END ($end) > 61104. $input will crash a Tandy 200!">&2
+	err=err^16
+    elif ((end>62336)); then
+	echo "Warning: END ($end) > 62336. $input will crash PC-8201/8300 and Tandy 200">&2
+	err=err^16
+    elif ((end>62960)); then
+	echo "Warning: END ($end) > 62960. $input will crash all Model-T computers!!">&2
+	err=err^16
+    fi
+
+    return $err
 }
 
 
@@ -140,13 +185,16 @@ EOF
     fi
 }
 main $(od -t u1 -v -An "$input") | $tandycharset > "$output"
+err=${PIPESTATUS[0]}
 
-if [[ $tandycharset == "cat" ]]; then
+if (( err != 0 )); then
+    exit $err
+elif [[ $tandycharset == "cat" ]]; then
     outnodo=${output##*/}
     outnodo=${outnodo%.[Dd][Oo]}
-cat <<EOF
-Now transfer $output to your Model-T
-and in BASIC type
-    run "$outnodo"
-EOF
+    cat <<-EOF
+	Now transfer $output to your Model-T
+	and in BASIC type
+	    run "$outnodo"
+	EOF
 fi
