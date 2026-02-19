@@ -63,12 +63,22 @@ chmod +x co2do
 * Too slow: A 1500 byte .CO files takes about 40 seconds just to load
   into memory. _(That's 300 baud!)_
 
+* If memory is small and the file is large, you can get an ?OM error
+  when the .DO file is RUN. The solution is to not transfer the .DO
+  file first, instead RUN it directly from the serial port:
+
+  1. Type this BASIC command (pick the one for your machine):
+	* Model 100, Tandy 102, Kyotronic 85, Olivetti M10<br/>`run "COM:88N1"`
+	* Tandy 200<br/>`run "COM:88N1ENN"`
+	* NEC PC-8201/8300<br/>`run "COM:8N81XN"`
+  2. Then on your host PC, send the file to serial port. For example,
+	 GNU/Linux machines can do `cat FILENM.DO >/dev/ttyUSB0`
+
+
 ## Todo
 
-* Cleanup the ugly warnmem() function. Should only WARN, not ERR if
-  the .DO file will not fit.
-
-* Remove TIME$ debugging once it is fast enough.
+* Cleanup the ugly warnmem branch. Should only WARN, not ERR if the
+  .DO file will not fit.
 
 * POKEing >= MAXRAM == big disaster! Maybe BASIC program should check
   MAXRAM? NEC PC8201 has no "MAXRAM" but the PC-8300 techref implies
