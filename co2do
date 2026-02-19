@@ -13,7 +13,7 @@
 # Features:
 #
 # * Inspired by Stephen Adolph's efficient encoding scheme which
-#   increases storage size by at most 2x + k (where k is approx. 600),
+#   increases storage size by at most 2x + k (where k is approx. 500),
 #   and on average closer to 1.3x + k.
 #
 # * Works on any of the Kyotronic Sisters: 
@@ -207,8 +207,9 @@ outputfilter() {
 main $(od -t u1 -v -An "$input") | $tandycharset | outputfilter > "$output"
 err=${PIPESTATUS[0]}
 
-if (( err & ERRTOP8KDO )); then
-    cat <<-EOF
+if [[ $tandycharset == "cat" ]]; then
+    if (( err & ERRTOP8KDO )); then
+	cat <<-EOF
 	Use a serial connection to transfer $output to your Model-T
 	by using this BASIC command (pick the one for your machine):
 	    run "COM:88N1"	# Model 100, Tandy 102, Kyotronic 85, Olivetti M10
@@ -217,16 +218,14 @@ if (( err & ERRTOP8KDO )); then
 	On your host PC, send the file to serial port. For example:
 	    cat $output >/dev/ttyUSB0
 	EOF
-fi
-
-if (( err != 0 )); then
-    exit $err
-elif [[ $tandycharset == "cat" ]]; then
-    outnodo=${output##*/}
-    outnodo=${outnodo%.[Dd][Oo]}
-    cat <<-EOF
+    elif (( !err )); then
+	outnodo=${output##*/}
+	outnodo=${outnodo%.[Dd][Oo]}
+	cat <<-EOF
 	Now transfer $output to your Model-T
 	and in BASIC type
 	    run "$outnodo"
 	EOF
+    fi
 fi
+exit $err
