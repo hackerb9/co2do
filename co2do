@@ -64,7 +64,7 @@ function main() {
     emitbasicdecode
     printf "14000 '$input"
     emitdata "$@"
-    warnmem $TOP $LEN $EXE $#
+    true			# XXX todo: call external warnmem util
     return			# Return result from warnmem
 }
 
@@ -98,13 +98,11 @@ function emitbasicdecode() {
     # * double check the filesize matches the header length.
     # * do not discard a quoting "/" at the end of a DATA line.
     cat <<-"EOF"
-        13029 '?:?TIME$;CHR$(27);"H";
 	13030 READP$:FORX=1TOLEN(P$):a$=MID$(P$,X,1)
 	13040 if a$="/" then if e=1 then 13080: else e=1: goto 13070
 	13050 v=asc(a$): if e=1 then v=v-128: e=0
 	13060 ?H$q;:POKEQ+TP,v:Q=Q+1
 	13070 NEXT:GOTO13030
-	13081 '?:?time$
 	13090 RETURN
 	EOF
 }
@@ -120,49 +118,6 @@ declare -i ERRMAXRAMKYO=$((1<<6))
 #declare -i ERR=$((1<<))
 #declare -i ERR=$((1<<))
 
-
-function warnmem() {
-    # Print warnings given TOP, LEN, EXE, and size of the ML program
-    local -i top=$1 len=$2 exe=$3 mlsize=$4
-    local -i end=top+len  err=0
-
-    # Sanity check
-    if ((len != mlsize)); then
-	printf "\nERROR:\n\tNot a valid .CO file. LEN=$len, but FILESIZE=$mlsize.\n\n">&2
-	err=1^ERRINVALIDCO
-    fi
-
-    # due to overhead, this program cannot convert some .CO files to BASIC.
-    if ((top<32768)); then
-	printf "\nERROR:\n\tTOP ($top) < 32768, writing to Read-only Memory.\n\n" >&2
-	err=err^ERRTOPINVALID
-    elif ((top<59555)); then
-	printf "Warning:\n\tTOP ($top) is very low. $output may not work on 8K machines.\n\n" >&2
-	err=err^ERRTOP8K
-    elif ((top<61000)); then
-	cat <<-EOF >&2
-	Note: TOP ($top) is too low for 8K machines to fit both .DO and .BA.
-	To workaround, tokenize directly from a device instead of downloading.
-	For example, RUN "COM:98N1" or RUN "0:$output"
-
-	EOF
-	err=err^ERRTOP8KDO
-    fi
-
-    # Check if END exceeds MAXRAM
-    if ((end>61104)); then
-	printf "\nWarning:\n\tEND ($end) > 61104. $input will crash a Tandy 200!\n\n">&2
-	err=err^ERRMAXRAMT200
-    elif ((end>62336)); then
-	printf "\nWarning:\n\tEND ($end) > 62336. $input will crash PC-8201/8300 and Tandy 200\n\n">&2
-	err=err^ERRMAXRAMNEC
-    elif ((end>62960)); then
-	printf "\nError:\n\tEND ($end) > 62960. $input will crash *all* Model-T computers!!\n\n">&2
-	err=err^ERRMAXRAMKYO
-    fi
-
-    return $err
-}
 
 
 {
@@ -210,24 +165,13 @@ main $(od -t u1 -v -An "$input") | $tandycharset | outputfilter > "$output"
 err=${PIPESTATUS[0]}
 
 if [[ $tandycharset == "cat" ]]; then
-    if (( err & ERRTOP8KDO )); then
-	cat <<-EOF
-	Use a serial connection to transfer $output to your Model-T
-	by using this BASIC command (pick the one for your machine):
-	    run "COM:88N1"	# Model 100, Tandy 102, Kyotronic 85, Olivetti M10
-	    run "COM:88N1ENN"	# Tandy 200
-	    run "COM:8N81XN" 	# NEC PC-8201/8300
-	On your host PC, send the file to serial port. For example:
-	    cat $output >/dev/ttyUSB0
-	EOF
-    elif (( !err )); then
-	outnodo=${output##*/}
-	outnodo=${outnodo%.[Dd][Oo]}
-	cat <<-EOF
+    outnodo=${output##*/}
+    outnodo=${outnodo%.[Dd][Oo]}
+    cat <<-EOF
 	Now transfer $output to your Model-T
 	and in BASIC type
 	    run "$outnodo"
 	EOF
-    fi
 fi
+
 exit $err
