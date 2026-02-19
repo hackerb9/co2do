@@ -104,7 +104,6 @@ function emitbasicdecode() {
 	13050 v=asc(a$): if e=1 then v=v-128: e=0
 	13060 ?H$q;:POKEQ+TP,v:Q=Q+1
 	13070 NEXT:GOTO13030
-	13080 ?:IF LN<>q THEN ?:?"Error:",LN"<>"q:END
 	13081 '?:?time$
 	13090 RETURN
 	EOF
