@@ -63,6 +63,7 @@ EOF
     emitbasicdecode
     printf "14000 '$input"
     printdata "$@"
+    printf "\x1A"		# ^Z is EOF for Kyotronic Kin
 }
 
 function printdata() {
