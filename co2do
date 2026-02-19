@@ -51,14 +51,15 @@ function main() {
 	EXE: $EXE
 	EOF
     cat <<-EOF
-	10 CLEAR 5, $TOP
-	20 TP=$TOP: LN=$LEN: EX=$EXE
-	30 GOSUB 13000
-	40 IF PEEK(1)<>148 THEN CALL EX ELSE EXEC EX
-	50 END
+	10 MAXFILES=0: CLEAR 10, $TOP
+	20 DEFINT A-Z
+	30 TP=$((TOP-65536)): LN=$LEN: EX=$((EXE-65536))
+	40 GOSUB 13000
+	50 IF PEEK(1)<>148 THEN CALL EX ELSE EXEC EX
+	60 END
 	13000 'Decode ML
-	13010 CLS:Q=$TOP:H$=CHR\$(27)+"H"
-	13020 ?H$"       / $((TOP+LEN-1)) $input"
+	13010 CLS:Q=0:H$=CHR\$(13)
+	13020 ?"     / $((LEN-1)) $input at $TOP";
 	EOF
     emitbasicdecode
     printf "14000 '$input"
@@ -97,12 +98,14 @@ function emitbasicdecode() {
     # * double check the filesize matches the header length.
     # * do not discard a quoting "/" at the end of a DATA line.
     cat <<-"EOF"
+        13029 '?:?TIME$;CHR$(27);"H";
 	13030 READP$:FORX=1TOLEN(P$):a$=MID$(P$,X,1)
 	13040 if a$="/" then if e=1 then 13080: else e=1: goto 13070
 	13050 v=asc(a$): if e=1 then v=v-128: e=0
-	13060 ?H$q:POKEQ,v:Q=Q+1
-	13070 NEXTx:GOTO13030
-	13080 IF LN<>(q-TP) THEN ?:?"Error:",LN"<>"q-TP:END
+	13060 ?H$q;:POKEQ+TP,v:Q=Q+1
+	13070 NEXT:GOTO13030
+	13080 ?:IF LN<>q THEN ?:?"Error:",LN"<>"q:END
+	13081 '?:?time$
 	13090 RETURN
 	EOF
 }
