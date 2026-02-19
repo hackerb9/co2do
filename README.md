@@ -74,7 +74,7 @@ chmod +x co2do
   2. Then on your host PC, send the file to the serial port. For example,
 	 GNU/Linux machines can do `cat FILENM.DO >/dev/ttyUSB0`
 
-See [todo.md][todo.md] for more specifics.
+See [todo.md](todo.md) for more specifics.
 
 ## See also
 
