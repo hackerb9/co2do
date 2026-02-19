@@ -41,7 +41,10 @@ chmod +x co2do
 
 * Uses .CO header to detect where to POKE, length mismatch, and CALL addr.
 
-* As a special bonus, if you use the -t option, it will display a
+* Warns if the .CO file may not run on certain machines. (E.g., for 8K
+  machines if TOP<=57777; for the Tandy 200 if END>=61104).
+
+* As a special bonus, if you use the `-t` option, it will display a
   Unicode version of the program instead of writing to a .DO file.
   (Requires the [tandy-200.charmap file][charmap] from
   [hackerb9/tandy-locale][tandy-locale].)
@@ -52,21 +55,40 @@ chmod +x co2do
 
 [tandy-locale]: https://github.com/hackerb9/tandy-locale/
 
+## Known issues
+
+* Too big: BASIC loader increases .CO size 1.3x + 500 bytes. This
+  means some valid .CO programs may not be usable.
+
+* Too slow: A 1500 byte .CO files takes about 40 seconds just to load
+  into memory. _(That's 300 baud!)_
 
 ## Todo
 
-* Move length check out of BASIC code to save space.
+* Cleanup the ugly warnmem() function. Should only WARN, not ERR if
+  the .DO file will not fit.
 
-* Prevent POKEing to bad parts of RAM.
-  (E.g., `POKE Q` where `Q<HIMEM` or `Q>=MAXRAM`).
+* Remove TIME$ debugging once it is fast enough.
 
-## Misfeatures
+* POKEing >= MAXRAM == big disaster! Maybe BASIC program should check
+  MAXRAM? NEC PC8201 has no "MAXRAM" but the PC-8300 techref implies
+  it is a fixed value: 62336. We can detect a NEC using PEEK(1)==148.
+  Is this a good use of bytes?
+  
+* For speed, investigate using a **small** M/L program to copy the
+  data directly to the correct location and printing status to the
+  screen with RST 4.
+  * Q: Where can that program live? 
+	A: John Hogerhuis suggests as a string in the BASIC program. 
+  * Would have to parse it in BASIC to make it runnable. (Slash
+    escapes, addr relocate). How many bytes does that take?
+  * VARPTR is possible on NEC but not builtin. Again, how many bytes?
 
-* The shell script could, but does not yet, emit a warning if the
-  created .CO file would not run on certain machines. (For example if
-  TOP<=57777 on 8K machines or END>=61104 on a TANDY 200).  
-  It could also adjust the string allocation in CLEAR to be less if need be.
+## Misfeature details
 
+* Currently the BASIC loader is way too slow due to string parsing and
+  printing to the screen. VARPTR might help with the former, but I
+  believe M/L is needed to improve printing speed.
 * Despite having better compression than the usual HEX encoding, it
   still uses too much memory:
   * The increase in filesize makes it unusable for even middling sized
