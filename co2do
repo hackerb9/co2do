@@ -45,11 +45,13 @@ function main() {
     LEN=$3+$4*256
     EXE=$5+$6*256
     shift 6
-    cat<<-EOF >&2
-	TOP: $TOP
-	END: $((TOP+LEN))
-	EXE: $EXE
+    if [[ ! $quiet ]]; then
+	cat<<-EOF >&2
+		TOP: $TOP
+		END: $((TOP+LEN))
+		EXE: $EXE
 	EOF
+    fi	
     cat <<-EOF
 	10 MAXFILES=0: CLEAR 10, $TOP
 	20 DEFINT A-Z
@@ -120,19 +122,21 @@ declare -i ERRMAXRAMKYO=$((1<<6))
 
 
 
-{
-    # CLI args
+{    # CLI args
     tandycharset=cat
-    if [[ "$1" == "-t" ]]; then
-	shift
-	tandycharset="iconv -f $(dirname $0)/tandy-200.charmap"
-    fi
-    if [[ "$1" == "-" ]]; then shift; set -- /dev/stdin "$@"; fi
+    quiet=""
+    while getopts 'qt' name; do
+	case $name in
+	    q) quiet=: ;;
+	    t) tandycharset="iconv -f $(dirname $0)/tandy-200.charmap"  ;;
+	    *) exit 1 ;;
+	esac
+    done
+    shift $(($OPTIND - 1))
 
-    if [ -z "$1" ]; then
-	usage
-	exit 1
-    elif [ ! -r "$1" ]; then
+    if [ -z "$1" ]; then usage; exit 1; fi
+    if [[ "$1" == "-" ]]; then shift; set -- /dev/stdin "$@"; fi
+    if [ ! -r "$1" ]; then
 	echo "'$1' is not readable"
 	exit 1
     else
@@ -164,7 +168,7 @@ outputfilter() {
 main $(od -t u1 -v -An "$input") | $tandycharset | outputfilter > "$output"
 err=${PIPESTATUS[0]}
 
-if [[ $tandycharset == "cat" ]]; then
+if [[ $tandycharset == "cat" && -z $quiet ]]; then
     outnodo=${output##*/}
     outnodo=${outnodo%.[Dd][Oo]}
     cat <<-EOF
