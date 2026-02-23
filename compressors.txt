@@ -1,0 +1,57 @@
+https://www.reddit.com/r/programming/comments/cbd56/comment/c0rf319/
+
+Posted by [deleted] in 2010:
+
+This is how a lot of compression algorithms work, in fact. You've got
+two basic components:
+
+    The basic duplication elimination using a constant-sized window,
+which is the LZSS algorithm (and which is a slightly tweaked variant
+of the original LZ77, which nobody really uses). The only real
+variation here is the size of the window. Deflate's 32k is pretty
+small these days.
+
+    Then, some form or other of entropy coding which translates the
+stream of literal bytes, lengths and offsets produced by LZSS into a
+byte stream. Using Huffman coding has been popular here, and there are
+many further tricks one can apply beyond what Deflate does (keeping
+lists of common lengths or offsets, various ways to make the lists of
+lengths more compact, and so on). Lately, arithmetic or range coding
+is becoming more popular, as it is more efficient and easier to tweak
+in various ways, and also trivial to make adaptive (so that the
+compressor can adjust itself depending on the data sent, without
+having to stop and re-transmit parameters).
+
+Some examples:
+
+    Deflate, used in Zip, Gzip, PNG and many other places, is as we
+    know LZSS with a small window + basic Huffman coding.
+
+    The older LZH had several modes, but the best was a small-window
+    LZSS with Huffman coding, very much like deflate.
+
+    RAR is LZSS with a big window + more elaborate Huffman coding,
+    with an optional PPMd encoding mode (which is an entirely
+    different kind of compression algorithm which tries to build
+    models of the data sent to predict the probabilities of future
+    characters, instead of eliminating duplicate strings). It can also
+    preprocess the data so it compresses better.
+
+    LZMA is LZSS with a huge window + adaptive range coding (and some
+    extra cleverness).
+
+Compressors that are not LZSS-based include:
+
+    bzip2, which uses a somewhat mind-bending algorithm called the
+    Burrows-Wheeler Transform followed by some other simple
+    transformations, and then Huffman coding.
+
+    Old .Z compress, which used LZW, which is a tweaked version of
+    LZ78, the second of the two original compresison algorithms (the
+    other being LZ77). LZW is seldom used with any kind of clever
+    entropy coding, and just stores bit strings directly.
+
+    [Very old .z "pack", which used straight Huffman coding and had
+    relatively poor compression. --b9]
+    
+
