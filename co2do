@@ -109,19 +109,6 @@ function emitbasicdecode() {
 	EOF
 }
 
-
-declare -i ERRINVALIDCO=$((1<<0))
-declare -i ERRTOPINVALID=$((1<<1))
-declare -i ERRTOP8K=$((1<<2))
-declare -i ERRTOP8KDO=$((1<<3))
-declare -i ERRMAXRAMT200=$((1<<4))
-declare -i ERRMAXRAMNEC=$((1<<5))
-declare -i ERRMAXRAMKYO=$((1<<6))
-#declare -i ERR=$((1<<))
-#declare -i ERR=$((1<<))
-
-
-
 {    # CLI args
     tandycharset=cat
     quiet=""
