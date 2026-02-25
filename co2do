@@ -77,8 +77,8 @@ function emitdata() {
 	if (( count++ % 120 == 0 )); then
 	    printf '\n%d DATA"' $((linenum+=10))
 	fi
-	# Escape quotation mark, bang, delete, and ctrl chars (except tab)
-	if (( (v<34 && v!=9) || v==127 )); then
+	# Escape Quote (34), Bang (33), DEL (127), and ctrl chars (except Tab)
+	if (( (v<35 && v!=9 && v!=32) || v==127 )); then
 	    v=v+128
 	    printf "!"
 	fi
