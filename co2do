@@ -28,7 +28,7 @@
 #   Unicode version of the program instead of writing to a .DO file.
 #   (Requires the tandy-200.charmap file from hackerb9/tandy-locale.)
 
-# Todo: * Move length check out of BASIC code to save space.
+# Todo: 
 #       * Prevent POKEing to bad parts of RAM.
 #         (E.g., POKE Q where Q<HIMEM or Q>=MAXRAM).
 
@@ -97,7 +97,6 @@ function emitbasicdecode() {
     # * use the invalid sequence "!!" for End of Data,
     #   which allows me to quote DEL (7F) using "!\xFF".
     # * subtract 128 instead of adding it, just for aesthetics.
-    # * double check the filesize matches the header length.
     # * do not discard a quoting "!" at the end of a DATA line.
     cat <<-"EOF"
 	13030 READP$:FORX=1TOLEN(P$):a$=MID$(P$,X,1)
