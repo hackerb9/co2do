@@ -52,22 +52,35 @@ function main() {
 		EXE: $EXE
 	EOF
     fi	
+    if [[ $# -ne $LEN ]]; then
+	echo "Warning filesize mismatch! $# bytes found after header, not $LEN." >&2
+    fi
     cat <<-EOF
 	10 MAXFILES=0: CLEAR 10, $TOP
 	20 DEFINT A-Z
 	30 TP=$((TOP-65536)): LN=$LEN: EX=$((EXE-65536))
 	40 GOSUB 13000
 	50 IF PEEK(1)<>148 THEN CALL EX ELSE EXEC EX
-	60 END
+	90 END
 	13000 'Decode ML
-	13010 CLS:Q=0:H$=CHR\$(13)
-	13020 ?"     / $((LEN-1)) $input at $TOP";
+	13010 CLS:Q=0:E=0:H$=CHR\$(13)
+	13020 ?"$(space $LEN)/ $((LEN-1)) $input at $TOP";
 	EOF
     emitbasicdecode
     printf "14000 '$input"
     emitdata "$@"
     true			# XXX todo: call external warnmem util
     return			# Return result from warnmem
+}
+
+function space() {
+    # Put in enough space to fit the digits + a space on either side.
+    local -i i=$1
+    while ((i>10)); do
+	printf " "
+	i=i/10
+    done
+    printf "  "
 }
 
 function emitdata() {
@@ -104,7 +117,7 @@ function emitbasicdecode() {
 	13050 v=asc(a$): if e=1 then v=v-128: e=0
 	13060 ?H$q;:POKEQ+TP,v:Q=Q+1
 	13070 NEXT:GOTO13030
-	13090 RETURN
+	13090 ?:RETURN
 	EOF
 }
 
