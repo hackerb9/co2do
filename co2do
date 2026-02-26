@@ -64,7 +64,7 @@ function main() {
 	90 END
 	13000 'Decode ML
 	13010 CLS:Q=0:E=0:H$=CHR\$(13)
-	13020 ?" $(space $LEN) /"LN-1"Loading "NM$" at"TP+65536;
+	13020 ?"  $(space $LEN) /"LN-1"Loading "NM$" at"TP+65536;
 	EOF
     emitbasicdecode
     printf "14000 '$input"
