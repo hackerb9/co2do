@@ -54,6 +54,10 @@ function main() {
     fi	
     if [[ $# -ne $LEN ]]; then
 	echo "Warning filesize mismatch! $# bytes found after header, not $LEN." >&2
+	if [[ $# -gt $LEN ]]; then
+	    echo "Truncating output to $LEN bytes." >&2
+	    set -- "${@:1:LEN}"
+	fi
     fi
     cat <<-EOF
 	10 MAXFILES=0: CLEAR 10, $TOP: NM$="$input"
