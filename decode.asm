@@ -1,21 +1,33 @@
-	;; Given an address of a BASIC string in HL, remove the !
-	;; escapes by replacing with the next character minus 128.
-	;; Update the string length.
+	;; Given an address to copy to and the varptr of a BASIC
+	;; string, remove the ! escapes by replacing with the next
+	;; character minus 128.
+	;;
+	;; Destination address is sent from BASIC in HL by calling SETUP. 
+	;; The varptr of the string is in HL by calling MAIN.
+	;; MAIN gets the destination addresss from where SETUP stashed it.
 
 	CPU 8085
 
 	ORG 0
+SETUP:	
+	SHLD DEST		; Save HL in DESt as destination address. 
+	RET
+
+DEST:	DW 0
+
+MAIN:	
+	;; HL is VARPTR(P$) where P$ is bang-encoded.
 	PUSH H
 	MOV B, M		; B is length of input string
-	MVI C, 0		; C is resulting length
+	MVI C, 0		; C will be resulting length
 	INX H
-	MOV E, M		; DE is actual address of string
+	MOV E, M		; Load actual address of string into DE
 	INX H
 	MOV D, M
 	
-	MOV H, D		; HL = DL
-	MOV L, E
-
+	LHLD DEST		; Restore HL from saved DEST
+	XCHG			; Now HL is P$'s actual address
+				; and DE is address of destination
 	MOV A, B
 	ANA A
 	JZ END			; Zero-length string?
