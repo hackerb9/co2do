@@ -63,13 +63,12 @@ function main() {
 	10 MAXFILES=0: CLEAR 10, $TOP: NM$="$input"
 	20 DEFINT A-Z
 	30 TP=$((TOP-65536)): LN=$LEN: EX=$((EXE-65536))
-	40 GOSUB 13000
-	50 IF PEEK(1)<>148 THEN CALL EX ELSE EXEC EX
+	40 GOSUB 12000
+	50 GOSUB 13000
+	60 IF PEEK(1)<>148 THEN CALL EX ELSE EXEC EX
 	90 END
-	13000 'Decode ML
-	13010 CLS:Q=0:E=0:H$=CHR\$(13)
-	13020 ?"  $(space $LEN) /"LN-1"Loading "NM$" at"TP+65536;
 	EOF
+    emitmldecode
     emitbasicdecode
     printf "14000 '$input"
     emitdata "$@"
@@ -98,27 +97,40 @@ function emitdata() {
 	printf -v x "%x" $v
 	printf "\x$x"
     done
-    # End of DATA marked by '!!'
-    printf '!!\n'
+    # End of DATA marked by 'EOD'
+    printf '\n%d DATA EOD\n' $((linenum+=10))
+}
+
+function emitmldecode() {
+     # Install the M/L routine to decode DATA strings rapidly
+    cat <<-EOF
+	12000 'Install tiny M/L program to decode and install the rest
+	12001 RESTORE 12000
+	12005 ST=63574-65536: Q=ST
+	12010 READ X
+	12020 IF X=-1 THEN 12090
+	12030 IF X=-7 THEN READ L: READ H: A=H*256+L+ST: H=INT(A/256): L=A-H*256: POKE Q, L: Q=Q+1: X=H+256
+	12040 POKE Q, X
+	12050 Q=Q+1
+	12060 GOTO 12010 
+	12090 RETURN
+	EOF
+    ./dodo decode.asm.lst
 }
 
 function emitbasicdecode() {
-    # Credit to Stephen Adolph for the decode routine and encoding scheme.
-    # Any errors are mine (hackerb9).
-    # Modifications:
-    # * autodetect the load address from binary.
-    # * use the invalid sequence "!!" for End of Data,
-    #   which allows me to quote DEL (7F) using "!\xFF".
-    # * subtract 128 instead of adding it, just for aesthetics.
-    # * do not discard a quoting "!" at the end of a DATA line.
+    # Calls M/L routine setup to decode and install each DATA string
     cat <<-"EOF"
+	13000 RESTORE 13000
+	13010 CLS:H$=CHR$(13):Q=TP
+	13020 ?"       /"LN-1"Loading "NM$" at"TP+65536;
 	13025 ?@120,time$;:?@0,;
-	13030 READP$:VP=VARPTR(P$):P=PEEK(VP+1)+256*PEEK(VP+2)-65536:EN=p+peek(vp)-1: FOR X=P TO EN:V=PEEK(X)
-	13040 if v=33 then if e=1 then 13080: else e=1: goto 13070
-	13050 if e=1 then v=v-128: e=0
-	13060 ?H$q;
-	13065 POKEQ+TP,v:Q=Q+1
-	13070 NEXT:GOTO13030
+	13030 READP$
+	13040 IF P$ = "EOD" GOTO 13080
+	13050 CALL ST, 0, Q
+	13060 CALL ST+6, 0, VARPTR(P$)
+	13070 Q=Q+LEN(P$)
+	13075 GOTO 13030
 	13080 'All done
 	13085 ?@160,time$;:?@0,;
 	13090 ?:RETURN
