@@ -115,7 +115,8 @@ function emitmldecode() {
 	12060 GOTO 12010 
 	12090 RETURN
 	EOF
-    ./dodo decode.asm.lst
+    # XXX Debugging: 63574 is T200's ALTLCD buffer.
+    ./dodo 63574 decode.asm.lst
 }
 
 function emitbasicdecode() {
