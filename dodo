@@ -10,35 +10,17 @@
 
 function usage() {
     cat <<EOF
-Usage: dodo <TOPADDR> <INPUT.ASM.LST>
+Usage: dodo <INPUT.ASM.LST>
 EOF
 }
 
 function main() {
-    declare -i TOP=$1
-    shift
-
     echo -n "12500 DATA "
     cat "$@" | parselst
     echo -1
     return
 }
 
-function disabledemitml() {
-    cat <<-EOF
-    # Install the M/L routine to decode DATA strings rapidly
-    cat <<-EOF
-    	12000 'Install tiny M/L program to decode and install the rest
-	12005 Q=63574: ST=Q
-	12010 READ X
-	12020 IF X=-1 THEN 12090
-	12030 IF X=-7 THEN READ L: READ H: A=H*256+L+ST-1: H=INT(A/256): L=A-H*256: POKE Q, L: Q=Q+1: POKE Q, H: GOTO 12050
-	12040 POKE Q, X
-	12050 Q=Q+1
-	12060 GOTO 12010 
-	12090 RETURN
-	EOF
-}
 
 function parselst() {
     sed -rn '/^[0-9A-Fa-f]{4} /p' | cut -c 6-19 | 

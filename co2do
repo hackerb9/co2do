@@ -102,11 +102,15 @@ function emitdata() {
 }
 
 function emitmldecode() {
-     # Install the M/L routine to decode DATA strings rapidly
+    # Install the M/L routine to decode DATA strings rapidly
+
+    # Debugging: Hardcode to 63574, T200's ALTLCD buffer.
+    LOC=63574
+
     cat <<-EOF
 	12000 'Install tiny M/L program to decode and install the rest
 	12001 RESTORE 12000
-	12005 ST=63574-65536: Q=ST
+	12005 ST=$LOC-65536: Q=ST
 	12010 READ X
 	12020 IF X=-1 THEN 12090
 	12030 IF X=-7 THEN READ L: READ H: A=H*256+L+ST: H=INT(A/256): L=A-H*256: POKE Q, L: Q=Q+1: X=H+256
@@ -115,8 +119,7 @@ function emitmldecode() {
 	12060 GOTO 12010 
 	12090 RETURN
 	EOF
-    # XXX Debugging: 63574 is T200's ALTLCD buffer.
-    ./dodo 63574 decode.asm.lst
+    ./dodo decode.asm.lst
 }
 
 function emitbasicdecode() {
