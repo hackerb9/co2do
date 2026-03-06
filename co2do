@@ -2,15 +2,21 @@
 # co2do.sh
 # by hackerb9, February 2026
 #
-# Given a .CO machine language file for a TRS-80 Model 100 (or similar),
-# creates a .DO file containing a BASIC loader which will install the .CO
-# to the correct address using POKE and then start it.
+# Given a .CO machine language file for a TRS-80 Model 100 (or
+# similar), creates a .DO file containing a two-stage BASIC loader
+# which will install the .CO to the correct address and start it.
+
+# When done in BASIC, it takes minutes to POKE into memory even small
+# programs. However, this program uses a small assembly program to do
+# the decoding and POKEing. See decode.asm and the dodo() function.
 #
 # USAGE: co2do.sh FOO.CO FOO.DO
 #        Transfer FOO.DO to M100.
 #        On M100: run "FOO"
 #
 # Features:
+#
+# * VERY fast writing of .CO to memory.
 #
 # * Inspired by Stephen Adolph's efficient encoding scheme which
 #   increases storage size by at most 2x + k (where k is approx. 500),
@@ -31,7 +37,7 @@
 # Todo: 
 #       * Prevent POKEing to bad parts of RAM.
 #         (E.g., POKE Q where Q<HIMEM or Q>=MAXRAM).
-
+#       * Fix ML part to be cross platform.
 
 function usage() {
     cat <<EOF
@@ -76,12 +82,6 @@ function main() {
     return			# Return result from warnmem
 }
 
-function space() {
-    # Put in enough spaces to fit the digits.
-    local -i i=$1
-    while ((i>10)); do printf " "; i=i/10; done
-}
-
 function emitdata() {
     local -i linenum=14000 
     local -i v
@@ -117,7 +117,7 @@ function emitmldecode() {
 	12060 GOTO 12010 
 	12090 RETURN
 	EOF
-    ./dodo decode.asm.lst
+    dodo decode.asm.lst
 }
 
 function emitbasicdecode() {
@@ -136,6 +136,50 @@ function emitbasicdecode() {
 	13090 ?:RETURN
 	EOF
 }
+
+function dodo() {
+    # dodo: DATA output decode.asm to .DO.
+    # Given the filename of an assembly listing (from `asmx -l`), output
+    # the bytes as decimal values separated by commas in a DATA statement. 
+    # Addresses that will need to be relocated are prefixed with -7.
+    # End of data is signaled by -1.
+    echo -n "12500 DATA "
+    cat "$@" | parselst
+    echo -1
+    return
+}
+
+function parselst() {
+    # Parse an assembly listing on stdin and output data values.
+    # Whenever an address is seen, prefix it with -7.
+    # This routine is fragile, but it only needs to work with one
+    # program: decode.asm (which see). Also see, dodo().
+    sed -rn '/^[0-9A-Fa-f]{4} /p' | cut -c 6-19 | 
+	while read op arg; do
+	    case ${#op} in
+		0) continue ;;
+		2) echo "ibase=16; $op" | bc ;;
+		4) # Data for DW looks like a 16-bit opcode.
+		    echo "ibase=16; ${op:0:2}" | bc
+		    echo "ibase=16; ${op:2:2}" | bc
+		    ;;
+		*)
+		    echo "parselst error: What is op in '$op $arg'?" >&2
+	    esac
+	    case ${#arg} in
+		0) continue ;;
+		2) echo "ibase=16; $arg" | bc ;;
+		4) # Escape address for relocation with -7
+		    echo -7
+		    echo "ibase=16; ${arg:0:2}" | bc
+		    echo "ibase=16; ${arg:2:2}" | bc
+		    ;;
+		*)
+		    echo "parselst error: What is arg in '$op $arg'?" >&2
+	    esac
+	done | tr -s '\n' ','
+}
+
 
 {    # CLI args
     tandycharset=cat
