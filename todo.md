@@ -8,6 +8,8 @@
   it is a fixed value: 62336. We can detect a NEC using PEEK(1)==148.
   Is this a good use of bytes?
   
+## Done!
+
 * For speed, investigate using a **small** M/L program to copy the
   data directly to the correct location and printing status to the
   screen with RST 4.
