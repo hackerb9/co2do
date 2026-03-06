@@ -66,7 +66,7 @@ function main() {
 	fi
     fi
     cat <<-EOF
-	10 MAXFILES=0: CLEAR 10, $TOP: NM$="$input"
+	10 MAXFILES=0: CLEAR 256, $TOP: NM$="$input"
 	20 DEFINT A-Z
 	30 TP=$((TOP-65536)): LN=$LEN: EX=$((EXE-65536))
 	40 GOSUB 12000
@@ -108,13 +108,14 @@ function emitmldecode() {
     cat <<-EOF
 	12000 'Install tiny M/L program to decode and install the rest
 	12001 RESTORE 12000
-	12005 ST=$LOC-65536: Q=ST
+	12005 D$=SPACE\$(50): D=VARPTR(D$): ST=PEEK(D+1)+256*PEEK(D+2)-65536: Q=ST
 	12010 READ X
-	12020 IF X=-1 THEN 12090
+	12020 IF X=-1 THEN 12080
 	12030 IF X=-7 THEN READ L: READ H: A=H*256+L+ST: H=INT(A/256): L=A-H*256: POKE Q, L: Q=Q+1: X=H+256
 	12040 POKE Q, X
 	12050 Q=Q+1
 	12060 GOTO 12010 
+	12080 POKE D, Q-ST
 	12090 RETURN
 	EOF
     dodo decode.asm.lst
@@ -233,7 +234,7 @@ if [[ $tandycharset == "cat" && -z $quiet ]]; then
     cat <<-EOF
 	Now transfer $output to your Model-T
 	and in BASIC type
-	    run "$outnodo"
+	    run "${outnodo:0:6}"
 	EOF
 fi
 
