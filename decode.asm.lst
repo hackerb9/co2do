@@ -1,22 +1,47 @@
-                        	;; Given an address to copy to and the varptr of a BASIC
-                        	;; string, remove the ! escapes by replacing with the next
-                        	;; character minus 128.
+                        	;; Given a destination address and the varptr of a BASIC
+                        	;; string, copy the source string to the destination,
+                        	;; processing !-escapes by replacing each '!' with the
+                        	;; subsequent character with the high-bit flipped.
+
+                        	;; Calling is a two step process. First, the destination
+                        	;; address is sent from BASIC in HL by calling DCINIT.
+                        	;; Second, MAIN (= DCINIT+6) is called with the varptr of
+                        	;; the source string in HL.
+
+                        	;; Upon return, the length of the source string is modified to
+                        	;; reflect the actual number of characters written to the
+                        	;; destination address. The source string data is NOT changed.
+
+                        	;; Example usage from BASIC:
+                        	;;      10 DC=(DCINIT address after relocation)
+                        	;;      20 Q=(destination buffer address)
+                        	;; 	30 READ P$: IF P$="EOD" THEN END
+                        	;;  	40 CALL DC, 0, Q
+                        	;; 	50 CALL DC+6, 0, VARPTR(P$)
+                        	;; 	60 Q=Q+LEN(P$)
+                        	;; 	70 GOTO 30
                         	;;
-                        	;; Destination address is sent from BASIC in HL by calling SETUP.
-                        	;; The varptr of the string is in HL by calling MAIN.
-                        	;; MAIN gets the destination addresss from where SETUP stashed it.
+                        	;; When appending multiple strings to the same buffer, the
+                        	;; destination address does not need to be updated each time.
+                        	;; The following is equivalent to the above code:
+
+                        	;;      10 DC=(DCINIT address after relocation)
+                        	;;  	20 CALL DC, 0, (destination buffer address)
+                        	;; 	30 READ P$: IF P$="EOD" THEN END
+                        	;; 	40 CALL DC+6, 0, VARPTR(P$)
+                        	;; 	50 GOTO 30
 
 0000                    	CPU 8085
 
-0000                    	ORG 0
-0000                    SETUP:	
-0000  22 0400           	SHLD DEST		; Save HL in DESt as destination address.
+0000                    	ORG 0			; The BASIC loader relocates this routine.
+0000                    DCINIT:	
+0000  22 0400           	SHLD DEST		; Save HL in DEST as destination address.
 0003  C9                	RET
 
 0004  0000              DEST:	DW 0
 
 0006                    MAIN:	
-                        	;; HL is VARPTR(P$) where P$ is bang-encoded.
+                        	;; HL starts as VARPTR(P$) where P$ is bang-encoded.
 0006  E5                	PUSH H
 0007  46                	MOV B, M		; B is length of input string
 0008  0E 00             	MVI C, 0		; C will be resulting length
@@ -24,7 +49,6 @@
 000B  5E                	MOV E, M		; Load actual address of string into DE
 000C  23                	INX H
 000D  56                	MOV D, M
-                        	
 000E  2A 0400           	LHLD DEST		; Restore HL from saved DEST
 0011  EB                	XCHG			; Now HL is P$'s actual address
                         				; and DE is address of destination
@@ -50,12 +74,15 @@
 002B  05                	DCR B
 002C  C2 1700           	JNZ LOOP
 002F                    END:	
-002F  E1                	POP H
-0030  71                	MOV M, C		; Write new length to BASIC string
+002F  EB                	XCHG			; Save DE in DEST so next call can skip DCINIT
+0030  22 0400           	SHLD DEST
+0033  EB                	XCHG			; Not needed, just being overly fastidious
+0034  E1                	POP H
+0035  71                	MOV M, C		; Write new length to BASIC string
                         	
-0031  C9                	RET
+0036  C9                	RET
 
 00000 Total Error(s)
 
-DEST               00000004    END                0000002F    LOOP               00000017
-MAIN               00000006    SETUP              00000000    WRITE              00000025
+DCINIT             00000000    DEST               00000004    END                0000002F
+LOOP               00000017    MAIN               00000006    WRITE              00000025
