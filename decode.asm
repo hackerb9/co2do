@@ -4,8 +4,9 @@
 	;; subsequent character with the high-bit flipped.
 
 	;; Calling is a two step process. First, the destination
-	;; address is sent from BASIC in HL by calling DCINIT. Second,
-	;; MAIN is called with the varptr of the source string in HL.
+	;; address is sent from BASIC in HL by calling DCINIT.
+	;; Second, MAIN (= DCINIT+6) is called with the varptr of
+	;; the source string in HL.
 
 	;; Upon return, the length of the source string is modified to
 	;; reflect the actual number of characters written to the
@@ -20,9 +21,10 @@
 	;; 	60 Q=Q+LEN(P$)
 	;; 	70 GOTO 30
 	;; 
-	;; The next call to decode does not need to set the
-	;; destination via DCINIT when appending. So the above code
-	;; could be written as:
+	;; When appending multiple strings to the same buffer, the
+	;; destination address does not need to be updated each time.
+	;; The following is equivalent to the above code:
+
 	;;      10 DC=(DCINIT address after relocation)
 	;;  	20 CALL DC, 0, (destination buffer address) 
 	;; 	30 READ P$: IF P$="EOD" THEN END
@@ -47,7 +49,6 @@ MAIN:
 	MOV E, M		; Load actual address of string into DE
 	INX H
 	MOV D, M
-	
 	LHLD DEST		; Restore HL from saved DEST
 	XCHG			; Now HL is P$'s actual address
 				; and DE is address of destination
