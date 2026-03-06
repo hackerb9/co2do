@@ -6,9 +6,9 @@
 # similar), creates a .DO file containing a two-stage BASIC loader
 # which will install the .CO to the correct address and start it.
 
-# When done in BASIC, it takes minutes to POKE into memory even small
-# programs. However, this program uses a small assembly program to do
-# the decoding and POKEing. See decode.asm and the dodo() function.
+# This program uses a small assembly routine to decode and write the
+# bytes to memory, which is a hundred times faster than doing it in
+# BASIC. See decode.asm and the dodo() function.
 #
 # USAGE: co2do.sh FOO.CO FOO.DO
 #        Transfer FOO.DO to M100.
@@ -22,9 +22,8 @@
 #   increases storage size by at most 2x + k (where k is approx. 500),
 #   and on average closer to 1.3x + k.
 #
-# * Works on any of the Kyotronic Sisters: 
-#     Kyocera Kyotronic 85, TRS-80 Model 100/102, Tandy 200, 
-#     NEC PC-8201A/8300, and Olivetti M10.
+# * Works on almost any of the Kyotronic Sisters: 
+#     Kyocera Kyotronic 85, TRS-80 Model 100/102, Tandy 200, and Olivetti M10.
 #
 # * BASIC Automatically CLEARs the correct space and CALLs the program.
 #
@@ -35,9 +34,11 @@
 #   (Requires the tandy-200.charmap file from hackerb9/tandy-locale.)
 
 # Todo: 
-#       * Prevent POKEing to bad parts of RAM.
+#       * Prevent writing to bad parts of RAM.
 #         (E.g., POKE Q where Q<HIMEM or Q>=MAXRAM).
 #       * Fix ML part to be cross platform.
+#       * NEC PC-8201A/8300 support coming soon!
+#
 
 function usage() {
     cat <<EOF
@@ -103,8 +104,6 @@ function emitdata() {
 
 function emitmldecode() {
     # BASIC wrapper for the M/L routine to decode DATA strings rapidly.
-    LOC=63574    # Debugging: Hardcoded to 63574, T200's ALTLCD buffer.
-
     cat <<-EOF
 	12000 'Install tiny M/L program to decode and install the rest
 	12001 RESTORE 12000
@@ -123,6 +122,7 @@ function emitmldecode() {
 
 function emitbasicdecode() {
     # Calls M/L routine setup to decode and install each DATA string
+    # ST, start address of decode.asm, was setup by emitmlcode() above.
     cat <<-"EOF"
 	13000 REM ?"Loading "NM$" ("LN" bytes) at "TP
 	13010 RESTORE 13000
@@ -219,7 +219,7 @@ function parselst() {
 
 outputfilter() {
     # Add carriage returns since NEC PC-8201 uses Mac (or DOS?) line endings.
-    # Append ^Z at end of file to signal receiving M100 that file is finished.
+    # Append ^Z at end of file to signal M100 that file is finished.
     sed 's/$/\r/g'
     printf '\x1A'
 }
