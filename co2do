@@ -103,18 +103,24 @@ function emitdata() {
 }
 
 function emitmldecode() {
-    # BASIC wrapper for the M/L routine to decode DATA strings rapidly.
+    # BASIC wrapper for the M/L routine to decode DATA strings fast.
+    # Sets the BASIC variable DC to the address of the routine.
+    # NB: the machine language is stored in a BASIC string and called
+    # directly, so any further string manipulations in BASIC can foul
+    # it up. (READ is okay.)
     cat <<-EOF
-	12000 'Install tiny M/L program to decode and install the rest
-	12001 RESTORE 12000
-	12005 D$=SPACE\$(50): D=VARPTR(D$): ST=PEEK(D+1)+256*PEEK(D+2)-65536: Q=ST
-	12010 READ X
-	12020 IF X=-1 THEN 12080
-	12030 IF X=-7 THEN READ L: READ H: A=H*256+L+ST: H=INT(A/256): L=A-H*256: POKE Q, L: Q=Q+1: X=H+256
-	12040 POKE Q, X
-	12050 Q=Q+1
-	12060 GOTO 12010 
-	12080 POKE D, Q-ST
+	12000 'Install tiny M/L program in DC$
+	12001 'to decode and install main prg.
+	12003 'Set no strings after this!
+	12005 RESTORE 12000
+	12010 DC$=SPACE\$(99): D=VARPTR(DC$): DC=PEEK(D+1)+256*PEEK(D+2)-65536: Q=DC
+	12020 READ X
+	12030 IF X=-1 THEN 12080
+	12040 IF X=-7 THEN READ L: READ H: A=H*256+L+DC: H=INT(A/256): L=A-H*256: POKE Q, L: Q=Q+1: X=H+256
+	12050 POKE Q, X
+	12060 Q=Q+1
+	12070 GOTO 12020 
+	12080 POKE D, Q-DC: 'Set length of DC$
 	12090 RETURN
 	EOF
     dodo decode.asm.lst
@@ -122,15 +128,15 @@ function emitmldecode() {
 
 function emitbasicdecode() {
     # Calls M/L routine setup to decode and install each DATA string
-    # ST, start address of decode.asm, was setup by emitmlcode() above.
+    # DC, start address of decode.asm, was setup by emitmlcode() above.
     cat <<-"EOF"
 	13000 REM ?"Loading "NM$" ("LN" bytes) at "TP
 	13010 RESTORE 13000
 	13020 Q=TP
 	13030 READP$
 	13040 IF P$ = "EOD" GOTO 13080
-	13050 CALL ST, 0, Q
-	13060 CALL ST+6, 0, VARPTR(P$)
+	13050 CALL DC, 0, Q
+	13060 CALL DC+6, 0, VARPTR(P$)
 	13070 Q=Q+LEN(P$)
 	13075 GOTO 13030
 	13080 'All done
