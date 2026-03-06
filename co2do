@@ -16,7 +16,7 @@
 #
 # Features:
 #
-# * VERY fast writing of .CO to memory.
+# * BASIC loader writes .CO to memory very quickly (less than a second).
 #
 # * Inspired by Stephen Adolph's efficient encoding scheme which
 #   increases storage size by at most 2x + k (where k is approx. 500),
