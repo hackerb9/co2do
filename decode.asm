@@ -1,22 +1,45 @@
-	;; Given an address to copy to and the varptr of a BASIC
-	;; string, remove the ! escapes by replacing with the next
-	;; character minus 128.
-	;;
-	;; Destination address is sent from BASIC in HL by calling SETUP. 
-	;; The varptr of the string is in HL by calling MAIN.
-	;; MAIN gets the destination addresss from where SETUP stashed it.
+	;; Given a destination address and the varptr of a BASIC
+	;; string, copy the source string to the destination,
+	;; processing !-escapes by replacing each '!' with the
+	;; subsequent character with the high-bit flipped.
+
+	;; Calling is a two step process. First, the destination
+	;; address is sent from BASIC in HL by calling DCINIT. Second,
+	;; MAIN is called with the varptr of the source string in HL.
+
+	;; Upon return, the length of the source string is modified to
+	;; reflect the actual number of characters written to the
+	;; destination address. The source string data is NOT changed.
+
+	;; Example usage from BASIC:
+	;;      10 DC=(DCINIT address after relocation)
+	;;      20 Q=(destination buffer address) 
+	;; 	30 READ P$: IF P$="EOD" THEN END
+	;;  	40 CALL DC, 0, Q
+	;; 	50 CALL DC+6, 0, VARPTR(P$)
+	;; 	60 Q=Q+LEN(P$)
+	;; 	70 GOTO 30
+	;; 
+	;; The next call to decode does not need to set the
+	;; destination via DCINIT when appending. So the above code
+	;; could be written as:
+	;;      10 DC=(DCINIT address after relocation)
+	;;  	20 CALL DC, 0, (destination buffer address) 
+	;; 	30 READ P$: IF P$="EOD" THEN END
+	;; 	40 CALL DC+6, 0, VARPTR(P$)
+	;; 	50 GOTO 30
 
 	CPU 8085
 
-	ORG 0
-SETUP:	
-	SHLD DEST		; Save HL in DESt as destination address. 
+	ORG 0			; The BASIC loader relocates this routine.
+DCINIT:	
+	SHLD DEST		; Save HL in DEST as destination address. 
 	RET
 
 DEST:	DW 0
 
 MAIN:	
-	;; HL is VARPTR(P$) where P$ is bang-encoded.
+	;; HL starts as VARPTR(P$) where P$ is bang-encoded.
 	PUSH H
 	MOV B, M		; B is length of input string
 	MVI C, 0		; C will be resulting length
@@ -50,6 +73,9 @@ WRITE:
 	DCR B
 	JNZ LOOP
 END:	
+	XCHG			; Save DE in DEST so next call can skip DCINIT 
+	SHLD DEST
+	XCHG			; Not needed, just being overly fastidious
 	POP H
 	MOV M, C		; Write new length to BASIC string 
 	
