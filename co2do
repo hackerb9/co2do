@@ -67,7 +67,7 @@ function main() {
 	fi
     fi
     cat <<-EOF
-	10 MAXFILES=0: CLEAR 256, $TOP: NM$="$input"
+	10 MAXFILES=0: CLEAR 256, $TOP: NM$="$(basename "$input")"
 	20 DEFINT A-Z
 	30 TP=$((TOP-65536)): LN=$LEN: EX=$((EXE-65536))
 	40 GOSUB 12000
@@ -77,7 +77,7 @@ function main() {
 	EOF
     emitmldecode
     emitbasicdecode
-    printf "14000 '$input"
+    printf "14000 '$(basename "$input")"
     emitdata "$@"
     true			# XXX todo: call external warnmem util
     return			# Return result from warnmem
