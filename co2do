@@ -66,13 +66,12 @@ function main() {
 	    set -- "${@:1:LEN}"
 	fi
     fi
+    if (( TOP<62960 && TOP>32767 )); then clear=", $TOP"; else clear=""; fi
     cat <<-EOF
-	10 MAXFILES=0: CLEAR 256, $TOP: NM$="$(basename "$input")"
-	20 DEFINT A-Z
-	30 TP=$((TOP-65536)): LN=$LEN: EX=$((EXE-65536))
-	40 GOSUB 12000
-	50 GOSUB 13000
-	60 IF PEEK(1)<>148 THEN CALL EX ELSE EXEC EX
+	10 MAXFILES=0: CLEAR 256$clear: NM$="$(basename "$input")"
+	20 DEFINT A-Z: TP=$((TOP-65536)): LN=$LEN: EX=$((EXE-65536))
+	40 GOSUB 12000: GOSUB 13000
+	50 IF PEEK(1)<>148 THEN CALL EX ELSE EXEC EX
 	90 END
 	EOF
     emitmldecode
