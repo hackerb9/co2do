@@ -108,9 +108,7 @@ function emitmldecode() {
     # directly, so any further string manipulations in BASIC can foul
     # it up. (READ is okay.)
     cat <<-EOF
-	12000 'Install tiny M/L program in DC$
-	12001 'to decode and install main prg.
-	12003 'Set no strings after this!
+	12000 'Fast loader
 	12005 RESTORE 12000
 	12010 DC$=SPACE\$(99): D=VARPTR(DC$): DC=PEEK(D+1)+256*PEEK(D+2)-65536: Q=DC
 	12020 READ X
