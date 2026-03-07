@@ -59,9 +59,9 @@ function main() {
 	    set -- "${@:1:LEN}"
 	fi
     fi
-    if (( TOP<62960 )); then clear=" CLEAR 10, $TOP:"; else clear=""; fi
+    if (( TOP<62960 )); then clear=", $TOP"; else clear=""; fi
     cat <<-EOF
-	10 MAXFILES=0:$clear NM$="$(basename $input)"
+	10 MAXFILES=0: clear 10$clear: NM$="$(basename $input)"
 	20 DEFINT A-Z: TP=$((TOP-65536)): LN=$LEN: EX=$((EXE-65536))
 	40 GOSUB 13000
 	50 IF PEEK(1)<>148 THEN CALL EX ELSE EXEC EX
