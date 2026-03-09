@@ -1,5 +1,7 @@
 ## Todo
 
+* Fix varptr code to work on NEC PC-8201A.
+
 * Cleanup the ugly warnmem branch. Should only WARN, not ERR if the
   .DO file will not fit.
 
