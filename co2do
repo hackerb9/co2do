@@ -22,7 +22,7 @@
 #   increases storage size by at most 2x + k (where k is approx. 500),
 #   and on average closer to 1.3x + k.
 #
-# * Works on almost any of the Kyotronic Sisters: 
+# * Works on almost any of the Kyotronic Sisters:
 #     Kyocera Kyotronic 85, TRS-80 Model 100/102, Tandy 200, and Olivetti M10.
 #
 # * BASIC Automatically CLEARs the correct space and CALLs the program.
@@ -33,7 +33,7 @@
 #   Unicode version of the program instead of writing to a .DO file.
 #   (Requires the tandy-200.charmap file from hackerb9/tandy-locale.)
 
-# Todo: 
+# Todo:
 #       * Prevent writing to bad parts of RAM.
 #         (E.g., POKE Q where Q<HIMEM or Q>=MAXRAM).
 #       * Fix ML part to be cross platform.
@@ -58,7 +58,7 @@ function main() {
 		END: $((TOP+LEN))
 		EXE: $EXE
 	EOF
-    fi	
+    fi
     if [[ $# -ne $LEN ]]; then
 	echo "Warning filesize mismatch! $# bytes found after header, not $LEN." >&2
 	if [[ $# -gt $LEN ]]; then
@@ -83,7 +83,7 @@ function main() {
 }
 
 function emitdata() {
-    local -i linenum=14000 
+    local -i linenum=14000
     local -i v
     for v; do
 	if (( count++ % 120 == 0 )); then
@@ -110,13 +110,14 @@ function emitmldecode() {
     cat <<-EOF
 	12000 'Fast loader
 	12005 RESTORE 12000
-	12010 DC$=SPACE\$(99): D=VARPTR(DC$): DC=PEEK(D+1)+256*PEEK(D+2)-65536: Q=DC
+	12010 DC$=SPACE\$(99): IF PEEK(1)<>148 THEN D=VARPTR(DC$): ELSE VY$="DC$": GOSUB 40000: D=L+256*H
+	12015 DC=PEEK(D+1)+256*PEEK(D+2)-65536: Q=DC
 	12020 READ X
 	12030 IF X=-1 THEN 12080
 	12040 IF X=-7 THEN READ L: READ H: A=H*256+L+DC: H=INT(A/256): L=A-H*256: POKE Q, L: Q=Q+1: X=H+256
 	12050 POKE Q, X
 	12060 Q=Q+1
-	12070 GOTO 12020 
+	12070 GOTO 12020
 	12080 POKE D, Q-DC: 'Set length of DC$
 	12090 RETURN
 	EOF
@@ -132,17 +133,40 @@ function emitbasicdecode() {
 	13010 RESTORE 13000
 	13020 CALL DC, 0, TP
 	13030 READP$: IF P$="EOD" GOTO 13080
-	13050 CALL DC+6, 0, VARPTR(P$)
+	13040 IF PEEK(1)<>148 THEN P=VARPTR(P$): ELSE VY$="P$": GOSUB 40000: P=L+256*H
+	13050 CALL DC+6, 0, P
 	13060 GOTO 13030
 	13080 'All done
 	13090 ?:RETURN
 	EOF
 }
 
+emitnecvarptr() {
+    # VARPTR by Gary Weber of web8201.net
+    # Entry: VY$ must contain the name of variable of interest
+    # Exit: H & L contain variable's address, TY contains type
+    # Example:
+    #   100 A$="This is a sample string."
+    #   110 VY$="A$":GOSUB 40000
+    #   120 PRINT "VARPTR of ";VY$;" is ";L+(H*256)
+    cat <<-EOF
+	39999 'VARPTR by Gary Weber for NEC 8201/8300
+	40000 H=0:L=0:TY=0
+	40010 POKE64448,205:POKE64449,175:POKE64450,73:POKE64451,235
+	40020 POKE64452,58:POKE64453,139:POKE64454,250:POKE64456,201
+	40030 IFVY$=""THENPRINT"VY$ not defined!":STOP
+	40040 FORH=64457TO64463:POKEH,ASC(MID$(VY$,H,1)+CHR$(0)):NEXT:POKE64464,0
+	40050 POKE63912,201:POKE63913,251:EXEC64448
+	40060 L=PEEK(63912!):H=PEEK(63913!):TY=PEEK(63911!)
+	40070 RETURN
+	EOF
+}
+
+
 function dodo() {
     # dodo: DATA output decode.asm to .DO.
     # Given the filename of an assembly listing (from `asmx -l`), output
-    # the bytes as decimal values separated by commas in a DATA statement. 
+    # the bytes as decimal values separated by commas in a DATA statement.
     # Addresses that will need to be relocated are prefixed with -7.
     # End of data is signaled by -1.
     echo -n "12500 DATA "
@@ -156,7 +180,7 @@ function parselst() {
     # Whenever an address is seen, prefix it with -7.
     # This routine is fragile, but it only needs to work with one
     # program: decode.asm (which see). Also see, dodo().
-    sed -rn '/^[0-9A-Fa-f]{4} /p' | cut -c 6-19 | 
+    sed -rn '/^[0-9A-Fa-f]{4} /p' | cut -c 6-19 |
 	while read op arg; do
 	    case ${#op} in
 		0) continue ;;
