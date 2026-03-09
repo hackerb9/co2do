@@ -22,8 +22,9 @@
 #   increases storage size by at most 2x + k (where k is approx. 500),
 #   and on average closer to 1.3x + k.
 #
-# * Works on almost any of the Kyotronic Sisters:
-#     Kyocera Kyotronic 85, TRS-80 Model 100/102, Tandy 200, and Olivetti M10.
+# * Works on all of the Kyotronic Sisters:
+#     Kyocera Kyotronic 85, TRS-80 Model 100/102, Tandy 200, Olivetti M10,
+#     NEC PC-8201/8201A/8300.
 #
 # * BASIC Automatically CLEARs the correct space and CALLs the program.
 #
@@ -36,8 +37,6 @@
 # Todo:
 #       * Prevent writing to bad parts of RAM.
 #         (E.g., POKE Q where Q<HIMEM or Q>=MAXRAM).
-#       * Fix ML part to be cross platform.
-#       * NEC PC-8201A/8300 support coming soon!
 #
 
 function usage() {
@@ -150,42 +149,6 @@ emitnecvarptr() {
     #   110 VY$="A$":GOSUB 40000
     #   120 PRINT "VARPTR of ";VY$;" is ";L+(H*256)
     cat <<-EOF
-	40100 'VARPTR 8200 - STEVE SARNA 11/12/84
-	40110 HI=0:HH=0:HM=0:HL=0:LH=0:LM=0:LL=0
-	40111 MH=0:ML=0:LO=0:LE=0:VP=0:TY=0:VP=0
-	40112 H=0:L=0
-	40140 'CALL 49AF - PTRGET
-	40150 'XCHG      - GET VARPTR IN HL
-	40160 'LDA FA8B  - VARTYP IN A
-	40170 'RET
-	40180 POKE 62320!,205      'CALL 49AF
-	40190 POKE 62321!,175      '(AF)
-	40200 POKE 62322!,73       '(49)
-	40210 POKE 62323!,235      'XCHG
-	40220 POKE 62324!,58       'LDA FA8B
-	40230 POKE 62325!,139      '(8B)
-	40240 POKE 62326!,250      '(FA)
-	40250 POKE 62327!,201      'RET
-	40260 'INSERT VARIABLE NAME HERE:
-	40270 POKE 62328!,ASC("P") 'VARIABLE
-	40280 POKE 62329!,ASC("$") ' NAME
-	40350 'HL FOR BASIC 'EXEC' IS STORED
-	40360 'AT LOCATIONS L:63912 AND H:63913
-	40370 POKE 63912!,120'POINT TO SEARCH
-	40380 POKE 63913!,243'VARIABLE STORAGE
-	40390 '               (62328)= F 3 7 8
-	40400 '      SPLIT HEXDECIMAL= 243 120
-	40410 EXEC 62320!:'DO THE VARPTR!
-	40420 'RETRIEVE H AND L AND A:63911
-	40430 L=PEEK(63912!)
-	40440 H=PEEK(63913!)
-	40450 TY=PEEK(63911!)
-	40460 PRINT"VARIABLE TYPE ="TY
-	40470 VP=H*256+L
-	40480 PRINT"VARPTR="VP
-	40490 RETURN
-
-
 	39999 'VARPTR by Gary Weber for NEC 8201/8300
 	40000 H=0:L=0:TY=0
 	40010 POKE64448,205:POKE64449,175:POKE64450,73:POKE64451,235
