@@ -1,6 +1,6 @@
 ## Todo
 
-* Fix varptr code to work on NEC PC-8201A.
+* Make loader small enough to fit in 8K with a reasonably sized M/L program.
 
 * Cleanup the ugly warnmem branch. Should only WARN, not ERR if the
   .DO file will not fit.
@@ -11,6 +11,8 @@
   Is this a good use of bytes?
   
 ## Done!
+
+* Fix varptr code to work on NEC PC-8201A.
 
 * For speed, investigate using a **small** M/L program to copy the
   data directly to the correct location and printing status to the
