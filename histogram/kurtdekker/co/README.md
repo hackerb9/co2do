@@ -1,29 +1,41 @@
 # M100 Games by Kurt Dekker 
 
-Note: All games require DUMP.CO to be loaded first. 
+Note: All games require [DUMP.CO][DUMP] to be loaded first. 
 
-| File | Description                              | Bytes |
-|------|------------------------------------------|------:|
-| DUMP | Screen refresh utility used by ALL games |   131 |
+| File            | Description                              | Bytes |
+|-----------------|------------------------------------------|------:|
+| [DUMP][DUMP] | Screen refresh utility used by ALL games |   131 |
+
+[DUMP]: DUMP.CO
+
 
 Hit RESET button to exit games.
 
 
 ## Actual Games
-| File              | Description                           | Bytes | CALL/TOP |
-|-------------------|---------------------------------------|------:|:--------:|
-| Fisque            | Fission Quest - side scrolling SHMUP  |  3303 | 55700    |
-| Galaxian (README) | "A shameless ripoff of Galaxian" 1985 |  3711 | 55800    |
-| Helico 2 (README) | 'Copter Strike 1986                   |  3999 | 55000    |
-| Drive (README)    | Pole Position inspired                |  1505 | 57500    |
-| Drive 2           | Improved version of Drive             |  1701 | 57000    |
-| LUNAR3            | Lunar Lander v3.3 1994                |  5158 |          |
-| TABLE1            | Needed for DRIVE game                 |   261 | 59500    |
+| File                                | Description                           | Bytes | CALL/TOP |
+|-------------------------------------|---------------------------------------|------:|:--------:|
+| [Fisque][fisque]                    | Fission Quest - side scrolling SHMUP  |  3304 | 55700    |
+| [Galaxian][gal] ([README][grm])     | "A shameless ripoff of Galaxian" 1985 |  3711 | 55800    |
+| [Helico 2][helico2] ([README][hrm]) | 'Copter Strike 1986                   |  4000 | 55000    |
+| [Drive 2][drive2] ([README][drm])   | Pole Position inspired driving game   |  1702 | 57000    |
+| [TABLE1][table1]                    | Needed for DRIVE game                 |   262 | 59500    |
+| [LUNAR3][lunar3]                    | Lunar Lander v3.3 1994                |  5159 |          |
+
+[fisque]: FISQUE.CO
+[gal]: GLXIAN.CO
+[grm]: GALAXIAN.TXT
+[helico2]: HELCO2.CO
+[hrm]: HELICO.TXT
+[drive2]: DRIVE2.CO
+[drm]: DRIVE.TXT
+[table1]: TABLE1.CO
+[lunar3]: LUNAR3.CO
 
 ## Utility
 | File   | Description                          | Bytes |
 |--------|--------------------------------------|------:|
-| ASSEMB | Kurt's Assembler                     |   582 |
+| ASSEMB | Kurt's Assembler                     |  2932 |
 | DOCSZ  | Tells the size of all document files |       |
 | FMT    | Print formatting utility             |       |
 | FORM   | Print formatting utility             |       |
@@ -36,6 +48,7 @@ Hit RESET button to exit games.
 | BALLBNCE | Bouncing balls demo DUMP.CO's speed         |   447 |       |
 | BOLO     | Preliminary port of BOLO, requires DUMPBOLO |   507 |       |
 | DUMPBOLO | Special smaller-screen dumper for BOLO only |       |       |
+| DRIVE    | Pole Position inspired, older than Drive 2  |  1505 | 57500 |
 | FUN0521  | Random screen noise, scrolling poorly       |   126 |       |
 | FUN0718  | Strange matrix lines scrolling smoothly     |   102 |       |
 | GALAXORG |                                             |       |       |
