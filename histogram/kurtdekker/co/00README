@@ -1,0 +1,8 @@
+https://bitchin100.com/m100-oss/archive.html
+
+ Kurt Dekker of http://www.plbm.com (plbm games) has generously granted the TRS-80 Model 100 Intel 8085 assembly and Microsoft BASIC code to the Model 100 and vintage computing community under the GPL license! You will find the full set of source code here. Play, enjoy, learn, reuse. Also please visit Kurt's site. Currently he is writing games for PDAs and cell phones.
+
+ New addition: "CO" format files for all .DEC ASCII files. Note, most games require DUMP.CO to be installed. That means you need to clear memory for DUMP.CO, and "LOADM" it at least once before running Kurt's games.
+The file is here: http://bitchin100.com/files/m10x/VV_COFILES.ZIP
+For those without a real Model 100 or 102, you can check out Kurt's Virtual Vanessa emulator (BTW it is only designed to play his games... for a general purpose emulator, see Virtual T.
+Note that to run Virtual Vanessa you need to own a copy of the Microsoft BASIC ROM image, which is a 32K file, and needs to be named M100ROM.DAT 

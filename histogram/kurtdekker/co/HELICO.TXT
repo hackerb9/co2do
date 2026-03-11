@@ -1,0 +1,44 @@
+helico.txt
+
+        How to play 'Copter Strike on Virtual Vanessa/Model 100/102
+
+Updated:  November 16, 1994
+
+Keys to Use:
+
+      Enter - start new game
+      A and Z - move up and down
+      K and L - accelerate left and right (and flip directions)
+      Space - fire
+
+Control keys:
+
+      CapsLock - sound on/off
+      NumLock - pause the game
+
+Virtual Vanessa-specific keys:
+
+      F10 - reset
+      F11 - run faster
+      F12 - run slower
+
+In Copter Strike you pilot a well-armed helicopter over a hostile planet and
+blow up all the bad guys cruising around on the ground.  Simple enough, huh?
+
+NEVER sit still in Helico.  The little bars at the top of the screen mean
+you're sitting still, and you'd better get moving before the tractor beam is
+sent down after you.  This tractor beam will kill you.  The tractor beam also
+activates if you fly to high up in the sky for too long.
+
+Fly left and right and blow everything up.  DO NOT TOUCH ANYTHING, INCLUDING
+THE LITTLE POSTS ON THE GROUND.
+
+You get bonus helicopters at ever-widening intervals:  1000, 2000, 4000,
+7000, 11000, 16000, 22000, 29000, etc.
+
+If you enjoy this shareware, please send your $5 registration fee to:
+
+      Kurt W. Dekker <kwd@netcom.com>
+      PO Box 10342
+      Costa Mesa, CA  92627
+

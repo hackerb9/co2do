@@ -1,0 +1,39 @@
+drive.txt
+
+	How to play DRIVE/DRIVE2 on Virtual Vanessa/Model 100/102
+
+Updated:  September 6, 1998
+
+NOTE!  YOU MUST LOAD TABLE1.DEC FIRST (select it and press <Enter>)
+
+Keys to use:
+
+      Enter - start new game
+      A - Nitro (must hold down gas too!)
+      S - steer left
+      D - steer right
+      H - brake 1
+      J - brake 2 (use both for fast stopping)
+      K - gas
+
+Control keys:
+
+      CapsLock - sound on/off
+      NumLock - pause the game
+
+Virtual Vanessa-specific keys:
+
+      F10 - reset
+      F11 - run faster
+      F12 - run slower
+
+DRIVE was my attempt at Pole Position.  It's crude but it can be fun
+to try and get the 100% mark.  It requires full-throttle driving without
+ever crashing for just over one minute.
+
+If you enjoy this shareware, please send your $5 registration fee to:
+
+      Kurt W. Dekker <kwd@netcom.com>
+      PO Box 10342
+      Costa Mesa, CA  92627
+
