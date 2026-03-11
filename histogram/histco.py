@@ -32,6 +32,10 @@ if __name__ == "__main__":
     else:
         files=argv[1];
 
+    if glob(files) == []:
+        print(f"No files matched {files}")
+        exit(1)
+
     accumulate_bytes(glob(files))
 
     print(f"Unrotated: {getsize(sums)} bytes.")
