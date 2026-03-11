@@ -54,35 +54,36 @@
                         				; and DE is address of destination
 0012  78                	MOV A, B
 0013  A7                	ANA A
-0014  CA 2F00           	JZ END			; Zero-length string?
+0014  CA 3100           	JZ END			; Zero-length string?
 0017                    LOOP:	
 0017  7E                	MOV A, M		; Get next byte from source (*HL)
 0018  FE 21             	CPI '!'
 001A  C2 2500           	JNZ WRITE		; If not '!' just copy the character.
 001D  05                	DCR B
-001E  CA 2F00           	JZ END			; Ignore escape char with no following char.
+001E  CA 3100           	JZ END			; Ignore escape char with no following char.
 0021  23                	INX H			; Char is '!' so get next char in A
 0022  7E                	MOV A, M
 0023  EE 80             	XRI 128			; Decode character by flipping bit 7
 0025                    WRITE:	
 0025  EB                	XCHG
-0026  77                	MOV M, A		; Copy the byte from *HL to *DE.
-0027  EB                	XCHG
-0028  23                	INX H
-0029  13                	INX D
-002A  0C                	INR C
-002B  05                	DCR B
-002C  C2 1700           	JNZ LOOP
-002F                    END:	
-002F  EB                	XCHG			; Save DE in DEST so next call can skip DCINIT
-0030  22 0400           	SHLD DEST
-0033  EB                	XCHG			; Not needed, just being overly fastidious
-0034  E1                	POP H
-0035  71                	MOV M, C		; Write new length to BASIC string
+0026  D6 88             	SUI 136			; XXX Testing offset: Subtract 136 from char
+0028  77                	MOV M, A		; Copy the byte from *HL to *DE.
+0029  EB                	XCHG
+002A  23                	INX H
+002B  13                	INX D
+002C  0C                	INR C
+002D  05                	DCR B
+002E  C2 1700           	JNZ LOOP
+0031                    END:	
+0031  EB                	XCHG			; Save DE in DEST so next call can skip DCINIT
+0032  22 0400           	SHLD DEST
+0035  EB                	XCHG			; Not needed, just being overly fastidious
+0036  E1                	POP H
+0037  71                	MOV M, C		; Write new length to BASIC string
                         	
-0036  C9                	RET
+0038  C9                	RET
 
 00000 Total Error(s)
 
-DCINIT             00000000    DEST               00000004    END                0000002F
+DCINIT             00000000    DEST               00000004    END                00000031
 LOOP               00000017    MAIN               00000006    WRITE              00000025

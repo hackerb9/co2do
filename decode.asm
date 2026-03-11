@@ -66,6 +66,7 @@ LOOP:
 	XRI 128			; Decode character by flipping bit 7
 WRITE:	
 	XCHG
+	SUI 136			; XXX Testing offset: Subtract 136 from char
 	MOV M, A		; Copy the byte from *HL to *DE. 
 	XCHG
 	INX H

@@ -86,6 +86,7 @@ function emitdata() {
     local -i linenum=14000
     local -i v
     for v; do
+	v=(v+136)%256
 	if (( count++ % 120 == 0 )); then
 	    printf '\n%d DATA"' $((linenum+=10))
 	fi
