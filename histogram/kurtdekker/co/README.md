@@ -33,12 +33,12 @@ Hit RESET button to exit games.
 [lunar3]: LUNAR3.CO
 
 ## Utility
-| File             | Description                          | Bytes |
-|------------------|--------------------------------------|------:|
-| [ASSEMB][ASSEMB] | Kurt's Assembler                     |  2932 |
-| [DOCSZ][DOCSZ]   | Tells the size of all document files |   210 |
-| [FMT][FMT]       | Print formatting utility             |  2007 |
-| [FORM][FORM]     | Print formatting utility             |   158 |
+| File             | Description                                       | Bytes |
+|------------------|---------------------------------------------------|------:|
+| [ASSEMB][ASSEMB] | Kurt's Assembler (v3.0 8/19/85 -- v4.0 is newest) |  2932 |
+| [DOCSZ][DOCSZ]   | Tells the size of all document files              |   210 |
+| [FMT][FMT]       | Print formatting utility                          |  2007 |
+| [FORM][FORM]     | Print formatting utility                          |   158 |
 
 [ASSEMB]: ASSEMB.CO
 [DOCSZ]: DOCSZ.CO
