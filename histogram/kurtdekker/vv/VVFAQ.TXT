@@ -1,0 +1,139 @@
+vvfaq.txt
+
+     FREQUENTLY ASKED QUESTIONS ABOUT Virtual Vanessa PROGRAM
+
+        Virtual Vanessa TRS-80 Model 100 "LIMITED" Emulator
+
+Updated:  September 6, 1998
+
+This file is kept and udpated by kwd@plbm.com.  Please email me with
+any questions or clarifications that you feel are necessary. 
+Remember that this software has only been tested on a handful of
+different Model 100/102 computers, and as such is provided "as-is." 
+BE SURE TO BACK UP YOUR DATA BEFORE LOADING ANY OF THE *.DEC FILES
+INCLUDED INTO YOUR MODEL 100/102!!!
+
+Q.    What is VV?
+A.    VV stands for Virtual Vanessa.  While this might sound
+      "naughty," it is simply nothing more than the name for the
+      emulator based on the fact that I named my Model 100 "Vanessa"
+      back in 1984 when I bought it.  After 10 full years of
+      faithful service, I find it difficult to change "her" name
+      just because it sounds sort of dirty.
+
+Q.    What can VV do for me?
+A.    VV is an emulator environment that allows you to run certain
+      Model 100/102 software on the IBM PC.  The currently supported
+      software is a suite of arcade/action games that I wrote for
+      the Model 100 during high school.  I wanted to keep the games
+      alive, so I wrote this emulator to keep them playable, even if
+      Vanessa was to suddenly stop working some day (perish the
+      thought).
+
+Q.    What are VV's main limitations?
+A.    VV does not support any of the application programs available
+      from the Model 100/102, such as BASIC, TEXT, TELCOM, ADDRSS,
+      or SCHEDL.  The main purpose of VV is to run my game software,
+      and therefore I did not fully support everything necessary for
+      full ROM operation.
+
+Q.    Do I need a Model 100/102 to enjoy VV?
+A.    No.  The VV program enables you to run certain Model 100/102
+      software on an IBM PC.  A recommended minimum system is a
+      386SX/25.  Any slower system typically will not be able to
+      give realistic throughput.
+
+Q.    Can Model 100 programs work on my Model 102 as well?
+A.    Yes.  All the Model 102s that I have tested function
+      IDENTICALLY to the Model 100, as far as I know.  Test it out
+      yourself, but just be sure to save all your important data
+      beforehand!
+
+Q.    What do each of the different files do for me?
+A.    Here is a breakdown of each of the files:
+
+      VVFAQ.TXT   This document - updated whenever appropriate
+      VV.ZIP      The Virtual Vanessa emulator system itself. 
+                  Includes:
+            VV.EXE      The Virtual Vanessa emulator IBM PC
+                        executable.
+            FTU.BAS     File Transfer Utility.  Enables you to
+                        transfer binary files from your IBM PC to
+                        the Model 100 (over the serial RS-232
+                        connector; see below.).
+            M100ROM.DAT An image of the TRS-80 Model 100 ROM,
+                        necessary for complete system emulation. 
+                        This data may also be acquired by dumping
+                        the contents of the 32k ROM to a file on
+                        your IBM PC, so nobody's copyright is being
+                        violated here.  :)
+            *.DEC       The binary "image" files that VV and the
+                        Model 100/102 can execute.  These are in
+                        text-editable format.  Keep reading
+                        below...
+            *.CTF       Color Template Files:  used to simulate
+                        "software" cellophane on VV, giving "pseudo
+                        color" to otherwise monochromatic games.
+            *.TXT       Files that give information about different
+                        parts of the system.  Each game typically
+                        has its own *.TXT file to explain how to
+                        play it (okay, SOME games have a .TXT
+                        file!)
+
+Q.    What are *.DEC files?
+A.    *.DEC files are my own format, and are text-editable lines
+      containing the object (machine) code for a particular *.CO
+      file that would run in your actual Model 100/102 computer,
+      along with a checksum number to ensure accurate transmission. 
+      The FTU.BAS program runs in your Model 100/102, and "digests"
+      the stream of the *.DEC file and "pokes" it into memory so
+      that it can be executed on your Model 100/102.
+
+Q.    What us the DUMP.DEC/DUMP.CO file?
+A.    All the games that I wrote require my special screen driver to
+      access the bizarre and nonstandard LCD video circuitry of the
+      Model 100/102.  DUMP.CO is a program that loads at 62750 in
+      your Model 100/102, and is called directly by my game software
+      when it wishes to redraw the screen.  You can almost think of
+      it as a TSR that must be present.  IF YOU RUN ONE OF MY GAMES
+      BEFORE LOADING DUMP.CO, YOU ARE ASKING FOR A TOTAL SYSTEM
+      CRASH!!!!  Most games will print some sort of warning if they
+      don't find the electronic "signature" for DUMP.CO.
+
+Q.    What keys are typically used by most games?
+A.    Most games use the A and Z keys to move Up/Down, and the K and
+      L keys to move Left/Right.  These keys are aliased to the PC
+      cursor keys under Virtual Vanessa, BUT NOT ON THE MODEL
+      100/102!  Firing your weapon is usually the <Space> bar, and
+      some games use <Enter> or <Tab> for additional features. 
+      Refer to the *.TXT file for each game for more information
+      about that game.
+
+Q.    How can I transfer programs from my PC to my Model 100/102?
+A.    You will need a serial port on your PC, a serial cable, and a
+      null modem.  Use a regular terminal program (such as Procomm
+      Plus) to copy the FTU.BAS program from the PC down to the
+      Model 100/102.  This program will be the "receiving" end for
+      binary data transfers between the PC and the Model 100/102. 
+      Run the FTU.BAS program on the Model 100/102 and answer the
+      questions, and then run the VV software on your PC and select
+      the "Xfer Files" option when the cursor is on the desired
+      program.  Any problems will be reported.
+
+Q:    A lot of these programs don't seem to work.  What's up with
+      that?
+A:    I no longer work on the TRS-80 Model 100 since Vanessa has
+      died (may she rest in peace).  Therefore all the .DEC files
+      (i.e., .CO files) that I had saved up I simply uploaded as
+      part of this archive for your pleasure.  Some work, some don't
+      do much.  There are a few useful utilities you might enjoy,
+      such as FMT and FORM, which are print formatting utilities I
+      wrote (although there is no documentation available anymore),
+      and also DOCSZ, which will tell you the sizes of all document
+      files in your Model 100.
+
+Remember to register any shareware that you feel is worth your
+money!
+
+Email all questions to kwd@plbm.com.  I sincerely hope that you
+enjoy this software and find it worthwhile.

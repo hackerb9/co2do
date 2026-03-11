@@ -1,0 +1,86 @@
+;
+;  Copyright (C) 2004, Kurt W Dekker, PLBM Games, kwd@plbm.com, www.plbm.com
+;
+;  This program is free software; you can redistribute it and/or modify
+;  it under the terms of the GNU General Public License as published by
+;  the Free Software Foundation; either version 2 of the License, or
+;  (at your option) any later version.
+;
+;  This program is distributed in the hope that it will be useful,
+;  but WITHOUT ANY WARRANTY; without even the implied warranty of
+;  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;  GNU General Public License for more details.
+;
+;  You should have received a copy of the GNU General Public License
+;  along with this program; if not, write to the Free Software
+;  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+;
+
+
+
+50 MAXFILES=2:CLS:CLEAR 256:' Updated 03/01/91
+100 PRINT"Utility to transfer .CO files over"
+110 PRINT"the COM: port (From VV ONLY!)"
+200 PRINT:PRINT"S)end, R)eceive, Q)uit:"
+210 A$=INPUT$(1)
+220 IF A$="s" OR A$="S" THEN 1000
+230 IF A$="r" OR A$="R" THEN 2000
+250 IF A$="q" OR A$="Q" THEN MENU
+310 GOTO 210
+1000 PRINT:INPUT"Send which file:";F$
+1010 LOADM F$
+1020 A=PEEK(64206)+PEEK(64207)*256:PRINT"Top:"A
+1030 B=PEEK(64208)+PEEK(64209)*256+A-1:PRINT"End:"B
+1040 C=PEEK(64210)+PEEK(64211)*256:IFC>0THENPRINT"Exe:"C
+1050 BS=15
+1100 CLOSE 1:OPEN"com:78e1e"FOROUTPUTAS1
+1150 PRINT"Prepare to receive and hit a key"
+1160 A$=INPUT$(1)
+1200 Y=0:S=0:PRINT#1,MID$(STR$(A),2)","MID$(STR$(B),2)","MID$(STR$(C),2)","MID$(STR$(BS),2)
+1210 FOR I=A TO B
+1220 PRINT#1,MID$(STR$(PEEK(I)),2)",";:S=S+PEEK(I)
+1230 Y=Y+1:IFY=BSTHENPRINT#1,MID$(STR$(S),2):S=0:Y=0
+1240 NEXT
+1250 IFY=0THEN1350
+1260 FORI=1TOBS-Y:PRINT#1,"0,";:NEXT
+1270 PRINT#1,MID$(STR$(S),2)
+1300 PRINT#1,
+1350 CLOSE 1
+1400 PRINT"Sent..."
+1500 GOTO 200
+2000 PRINT:INPUT"Receive which file:";F$
+2100 PRINT"Go ahead and send data..."
+2110 CLOSE1:CLOSE2:OPEN"com:78e1e"FORINPUTAS1:OPEN"com:78e1e"FOROUTPUTAS2
+2120 PL=-1:NS=0
+2200 GOSUB3000:GOSUB2900:A=ZZ:GOSUB2900:B=ZZ:GOSUB2900:C=ZZ:GOSUB2900:BS=ZZ
+2250 IFA<HIMEMTHENBEEP:PRINT"Error... Insufficient HIMEM.":PRINT"Use CLEAR 0,"MID$(STR$(A),2)" at least.":GOSUB3400:GOTO200
+2270 Y=0:S=0:LN=1
+2300 I=A
+2310 GOSUB3000:IFPL=1THEN2600
+2315 PRINTLNCHR$(13);:LN=LN+1
+2320 GOSUB2900
+2330 K=ZZ:S=S+K:Y=Y+1
+2340 'PRINTMID$(STR$(K),2)",";
+2400 IFY<BSTHEN2500
+2410 GOSUB2900
+2420 IFEL=0THENPRINT"Extra info on line...":GOSUB3400:GOTO200
+2430 IFS<>ZZTHENBEEP:PRINT"Checksum error ("MID$(STR$(T),2)", line("MID$(STR$(LN),2)")":GOSUB3400:GOTO200
+2460 S=0:Y=0
+2500 IFI<=BTHENPOKEI,K:I=I+1
+2510 IFEL=1THEN2310ELSE2320
+2600 PRINT:PRINT"Received"
+2610 CLOSE 1:CLOSE 2
+2640 IFC>0THENSAVEMF$,A,B,CELSESAVEMF$,A,B
+2900 ZZ=VAL(W$)
+2910 II=INSTR(W$,",")
+2920 IFIITHENW$=MID$(W$,II+1)ELSEEL=1
+2990 RETURN
+3000 IFPL>=0THENPRINT#2,MID$(STR$(PL),2)":";
+3010 EL=0
+3020 IFNSTHENRETURN
+3100 LI$="":LINEINPUT#1,LI$
+3110 W$=LI$
+3120 PL=LEN(W$)+1
+3200 RETURN
+3400 PRINT#2,"-1:";:RETURN
+

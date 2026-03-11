@@ -1,0 +1,7 @@
+Changes required in STARTREK.BAS:
+
+04/07/92
+
+2270: MAKE SURE OF USING STATEMENT, missing a quote?
+
+*** Need to put in aliens fighting back!!

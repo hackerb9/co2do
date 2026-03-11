@@ -1,0 +1,33 @@
+galaxian.txt
+
+           How to play Galaxian on Virtual Vanessa/Model 100/102
+
+Updated:  November 16, 1994
+
+Keys to use:
+
+      Enter - start new game
+      A and Z - move up and down
+      Space - fire
+
+Control keys:
+
+      CapsLock - sound on/off
+      NumLock - pause the game
+
+Virtual Vanessa-specific keys:
+
+      F10 - reset
+      F11 - run faster
+      F12 - run slower
+
+Galaxian is a shameless ripoff of the original game.  It is quite playable
+even though it is turned sideways on the screen.  Basically blast as many
+waves of aliens as you can.  You get bonus ships every 5000 points.
+
+If you enjoy this shareware, please send your $5 registration fee to:
+
+      Kurt W. Dekker <kwd@netcom.com>
+      PO Box 10342
+      Costa Mesa, CA  92627
+

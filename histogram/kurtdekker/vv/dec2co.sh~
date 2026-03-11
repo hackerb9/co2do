@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Given the name of a file in Kurt Dekker's .DEC format,
+# Output a .CO file of the same name.
+
+for file; do
+    read top, end, exe, fifteen < $file
+    while read 
+
+done

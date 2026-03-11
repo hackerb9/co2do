@@ -1,0 +1,33 @@
+Explanation file for FTU.BAS File Transfer Utility         2/28/90
+
+Updated:  07/03/2004
+
+** FTU.BAS should be downloaded and installed on your Model 100
+
+- File(s) stored on PC computer have .DEC extension.
+- you can send these to the M100 over the serial port using any
+terminal program, such as Bitcom or Procomm on the PC side
+- it is best to put some kind of inter-line delay, like 100ms, in
+order to allow FTU.BAS to digest each line and poke it into memory.
+
+File structure of a DEC file:
+
+top,end,exe,wide
+d1,d2,d3, ... dwide,cksum
+... etc.
+<2 blank lines to end>
+
+where,
+
+top   : starting address to load
+end   : ending address to load
+exe   : execution address (0 if non-executable data file)
+wide  : .DEC format specifier, how many data bytes per text line
+(usu. 15)
+dn    : each data byte
+cksum : numeric sum of all dn values on that line (used to verify
+data)
+
+Two blank lines at end will cause FTU.BAS to correctly recognize an
+EOF condition and copy the loaded data into the Model 100 directory.
+
