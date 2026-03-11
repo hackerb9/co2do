@@ -14,7 +14,7 @@ for file; do
     top=$1 end=$2 exe=$3 linelen=$(($4+1))
     shift 4
     printf "TOP: %d\nEND: %d\nEXE: %d\n" $top $end $exe >&5
-    declare -i len=$((end - top))
+    declare -i len=$((end - top + 1))
     printf -v x "%04x" $top; printf "\x${x:2:2}\x${x:0:2}"
     printf -v x "%04x" $len; printf "\x${x:2:2}\x${x:0:2}"
     printf -v x "%04x" $exe; printf "\x${x:2:2}\x${x:0:2}"
