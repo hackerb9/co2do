@@ -46,7 +46,7 @@ if __name__ == "__main__":
     for k in [ x for x in size if size[x] == m ]:
         print(f"Rotation {k:+3d} => {size[k]} bytes.")
         
-    m42=size[42]
-    s42=size[0]-m42
-    print(f"\nRotation of +42 would save {s42} bytes ({100*s42/size[0]:.2f}%)")
+    m136=size[136]
+    s136=size[0]-m136
+    print(f"\nRotation of +136 would save {s136} bytes ({100*s136/size[0]:.2f}%)")
 
