@@ -46,7 +46,7 @@ EOF
 }
 
 function main() {
-    declare -i TOP LEN EXE
+    declare -i TOP LEN EXE ROT=136
     TOP=$1+$2*256
     LEN=$3+$4*256
     EXE=$5+$6*256
@@ -56,6 +56,7 @@ function main() {
 		TOP: $TOP
 		END: $((TOP+LEN))
 		EXE: $EXE
+		ROT: $ROT
 	EOF
     fi
     if [[ $# -ne $LEN ]]; then
@@ -68,7 +69,7 @@ function main() {
     if (( TOP<62960 && TOP>32767 )); then clear=", $TOP"; else clear=""; fi
     cat <<-EOF
 	10 MAXFILES=0: CLEAR 256$clear: NM$="$(basename "$input")"
-	20 TP=$((TOP)): LN=$LEN: EX=$((EXE))
+	20 TP=$((TOP)): LN=$LEN: EX=$((EXE)): RT=$((ROT))
 	40 GOSUB 12000: GOSUB 13000
 	50 IF PEEK(1)<>148 THEN CALL EX ELSE EXEC EX
 	90 END
@@ -86,7 +87,7 @@ function emitdata() {
     local -i linenum=14000
     local -i v
     for v; do
-	v=(v+136)%256
+	v=(v+$ROT)%256
 	if (( count++ % 120 == 0 )); then
 	    printf '\n%d DATA"' $((linenum+=10))
 	fi
@@ -132,7 +133,7 @@ function emitbasicdecode() {
     cat <<-"EOF"
 	13000 REM ?"Loading "NM$" ("LN" bytes) at "TP
 	13010 RESTORE 13000
-	13020 IF PEEK(1)<>148 THEN CALL DC, 0, TP ELSE H=(TP)/256: L=TP-H*256: POKE 63912, L: POKE 63913, H: EXEC DC
+	13020 IF PEEK(1)<>148 THEN CALL DC, RT, TP ELSE H=(TP)/256: L=TP-H*256: POKE 63912, L: POKE 63913, H: EXEC DC
 	13030 READP$: IF P$="EOD" GOTO 13080
 	13040 IF PEEK(1)<>148 THEN P=VARPTR(P$): CALL DC+6, 0, P: ELSE VY$="P$": GOSUB 40000: POKE 63912, L: POKE 63913, H: EXEC DC+6
 	13060 GOTO 13030

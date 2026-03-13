@@ -8,15 +8,21 @@
 	;; Second, MAIN (= DCINIT+6) is called with the varptr of
 	;; the source string in HL.
 
+	;; The call to DCINIT also specifies a number in register A
+	;; from 0 to 255 to be subtracted from every byte. This allows
+	;; the coding to be more efficient by rotating the character
+	;; set. 
+
 	;; Upon return, the length of the source string is modified to
 	;; reflect the actual number of characters written to the
 	;; destination address. The source string data is NOT changed.
 
 	;; Example usage from BASIC:
 	;;      10 DC=(DCINIT address after relocation)
+	;; 	15 A=(rotation offset or 0)
 	;;      20 Q=(destination buffer address) 
 	;; 	30 READ P$: IF P$="EOD" THEN END
-	;;  	40 CALL DC, 0, Q
+	;;  	40 CALL DC, A, Q
 	;; 	50 CALL DC+6, 0, VARPTR(P$)
 	;; 	60 Q=Q+LEN(P$)
 	;; 	70 GOTO 30
@@ -26,12 +32,13 @@
 	;; The following is equivalent to the above code:
 
 	;;      10 DC=(DCINIT address after relocation)
-	;;  	20 CALL DC, 0, (destination buffer address) 
+	;; 	15 A=(rotation offset or 0)
+	;;  	20 CALL DC, A, (destination buffer address) 
 	;; 	30 READ P$: IF P$="EOD" THEN END
 	;; 	40 CALL DC+6, 0, VARPTR(P$)
 	;; 	50 GOTO 30
 
-	CPU 8085
+	CPU 8085		; Build with asmx -w -e -l -b0 decode.asm
 
 	ORG 0			; The BASIC loader relocates this routine.
 DCINIT:	
@@ -41,6 +48,9 @@ DCINIT:
 DEST:	DW 0
 
 MAIN:	
+	;; A is Rotation offset subtracted from each character
+	STA ROT
+
 	;; HL starts as VARPTR(P$) where P$ is bang-encoded.
 	PUSH H
 	MOV B, M		; B is length of input string
@@ -66,7 +76,8 @@ LOOP:
 	XRI 128			; Decode character by flipping bit 7
 WRITE:	
 	XCHG
-	SUI 136			; XXX Testing offset: Subtract 136 from char
+	DB D6h			; D6 is SUI instruction
+ROT:	DB 136			; This value is subtracted from char
 	MOV M, A		; Copy the byte from *HL to *DE. 
 	XCHG
 	INX H
