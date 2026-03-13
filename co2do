@@ -46,7 +46,7 @@ EOF
 }
 
 function main() {
-    declare -i TOP LEN EXE ROT=136
+    declare -i TOP LEN EXE ROT=0
     TOP=$1+$2*256
     LEN=$3+$4*256
     EXE=$5+$6*256
@@ -99,8 +99,8 @@ function emitdata() {
 	printf -v x "%x" $v
 	printf "\x$x"
     done
-    # End of DATA marked by 'EOD'
-    printf '\n%d DATA EOD\n' $((linenum+=10))
+    # End of DATA marked by '!!'
+    printf '\n%d DATA !!\n' $((linenum+=10))
 }
 
 function emitmldecode() {
@@ -134,7 +134,7 @@ function emitbasicdecode() {
 	13000 REM ?"Loading "NM$" ("LN" bytes) at "TP
 	13010 RESTORE 13000
 	13020 IF PEEK(1)<>148 THEN CALL DC, RT, TP ELSE H=(TP)/256: L=TP-H*256: POKE 63912, L: POKE 63913, H: EXEC DC
-	13030 READP$: IF P$="EOD" GOTO 13080
+	13030 READP$: IF P$="!!" GOTO 13080
 	13040 IF PEEK(1)<>148 THEN P=VARPTR(P$): CALL DC+6, 0, P: ELSE VY$="P$": GOSUB 40000: POKE 63912, L: POKE 63913, H: EXEC DC+6
 	13060 GOTO 13030
 	13080 'All done
