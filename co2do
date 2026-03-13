@@ -68,15 +68,17 @@ function main() {
     fi
     if (( TOP<62960 && TOP>32767 )); then clear=", $TOP"; else clear=""; fi
     cat <<-EOF
-	10 MAXFILES=0: CLEAR 256$clear: NM$="$(basename "$input")"
-	20 TP=$((TOP)): LN=$LEN: EX=$((EXE)): RT=$((ROT))
+	10 MAXFILES=0: CLEAR 256$clear: NM$="${outname}"
+	20 TP=$((TOP)): LN=$LEN: EX=$((EXE)): RT=$((ROT)): ID=PEEK(1)
 	40 GOSUB 12000: GOSUB 13000
-	50 IF PEEK(1)<>148 THEN CALL EX ELSE EXEC EX
+	50 IF FRE(0) < LN THEN ?"Insufficient space to save "NM$: Q$=CHR\$(34): C$=",":?"Please try NEW then SAVEM "Q$;NM$;Q$;C$;TP;C$;TP+LN;C$;EX: END
+	60 IF ID<>148 THEN SAVEM NM$,TP,TP+LN,EX ELSE BSAVE NM$,TP,TP+LN,EX
+	80 IF ID<>148 THEN CALL EX ELSE EXEC EX
 	90 END
 	EOF
     emitmldecode
     emitbasicdecode
-    printf "14000 '$(basename "$input")"
+    printf "14000 '${outname}"
     emitdata "$@"
     emitnecvarptr
     true			# XXX todo: call external warnmem util
@@ -227,12 +229,11 @@ function parselst() {
 	exit 1
     else
 	input="$1"
-	shift
     fi
 
     output=/dev/stdout
-    if [ "$1" ]; then
-	output="$1"
+    if [ "$2" ]; then
+	output="$2"
 	shift
     elif [[ $tandycharset == "cat" ]]; then
 	if [[ $input == *.CO ]]; then
@@ -241,6 +242,10 @@ function parselst() {
 	    output=${input%.co}.do
 	fi
     fi
+    outname=$(basename "$output")
+    outname=${outname%%.*}
+    outname=${outname:0:6}
+    outname=${outname@U}.CO
 }
 
 outputfilter() {
