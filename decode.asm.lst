@@ -8,15 +8,21 @@
                         	;; Second, MAIN (= DCINIT+6) is called with the varptr of
                         	;; the source string in HL.
 
+                        	;; The call to DCINIT also specifies a number in register A
+                        	;; from 0 to 255 to be subtracted from every byte. This allows
+                        	;; the coding to be more efficient by rotating the character
+                        	;; set.
+
                         	;; Upon return, the length of the source string is modified to
                         	;; reflect the actual number of characters written to the
                         	;; destination address. The source string data is NOT changed.
 
                         	;; Example usage from BASIC:
                         	;;      10 DC=(DCINIT address after relocation)
+                        	;; 	15 A=(rotation offset or 0)
                         	;;      20 Q=(destination buffer address)
                         	;; 	30 READ P$: IF P$="EOD" THEN END
-                        	;;  	40 CALL DC, 0, Q
+                        	;;  	40 CALL DC, A, Q
                         	;; 	50 CALL DC+6, 0, VARPTR(P$)
                         	;; 	60 Q=Q+LEN(P$)
                         	;; 	70 GOTO 30
@@ -26,64 +32,68 @@
                         	;; The following is equivalent to the above code:
 
                         	;;      10 DC=(DCINIT address after relocation)
-                        	;;  	20 CALL DC, 0, (destination buffer address)
+                        	;; 	15 A=(rotation offset or 0)
+                        	;;  	20 CALL DC, A, (destination buffer address)
                         	;; 	30 READ P$: IF P$="EOD" THEN END
                         	;; 	40 CALL DC+6, 0, VARPTR(P$)
                         	;; 	50 GOTO 30
 
-0000                    	CPU 8085
+0000                    	CPU 8085		; Build with asmx -w -e -l -b0 decode.asm
 
 0000                    	ORG 0			; The BASIC loader relocates this routine.
 0000                    DCINIT:	
-0000  22 0400           	SHLD DEST		; Save HL in DEST as destination address.
-0003  C9                	RET
+0000  32 2A00           	STA ROT			; Save A as Rotation Offset for charset
+0003  22 0700           	SHLD DEST		; Save HL in DEST as destination address.
+0006  C9                	RET
 
-0004  0000              DEST:	DW 0
+0007  0000              DEST:	DW 0
 
-0006                    MAIN:	
+0009                    MAIN:	
                         	;; HL starts as VARPTR(P$) where P$ is bang-encoded.
-0006  E5                	PUSH H
-0007  46                	MOV B, M		; B is length of input string
-0008  0E 00             	MVI C, 0		; C will be resulting length
-000A  23                	INX H
-000B  5E                	MOV E, M		; Load actual address of string into DE
-000C  23                	INX H
-000D  56                	MOV D, M
-000E  2A 0400           	LHLD DEST		; Restore HL from saved DEST
-0011  EB                	XCHG			; Now HL is P$'s actual address
+0009  E5                	PUSH H
+000A  46                	MOV B, M		; B is length of input string
+000B  0E 00             	MVI C, 0		; C will be resulting length
+000D  23                	INX H
+000E  5E                	MOV E, M		; Load actual address of string into DE
+000F  23                	INX H
+0010  56                	MOV D, M
+0011  2A 0700           	LHLD DEST		; Restore HL from saved DEST
+0014  EB                	XCHG			; Now HL is P$'s actual address
                         				; and DE is address of destination
-0012  78                	MOV A, B
-0013  A7                	ANA A
-0014  CA 3100           	JZ END			; Zero-length string?
-0017                    LOOP:	
-0017  7E                	MOV A, M		; Get next byte from source (*HL)
-0018  FE 21             	CPI '!'
-001A  C2 2500           	JNZ WRITE		; If not '!' just copy the character.
-001D  05                	DCR B
-001E  CA 3100           	JZ END			; Ignore escape char with no following char.
-0021  23                	INX H			; Char is '!' so get next char in A
-0022  7E                	MOV A, M
-0023  EE 80             	XRI 128			; Decode character by flipping bit 7
-0025                    WRITE:	
-0025  EB                	XCHG
-0026  D6 88             	SUI 136			; XXX Testing offset: Subtract 136 from char
-0028  77                	MOV M, A		; Copy the byte from *HL to *DE.
-0029  EB                	XCHG
-002A  23                	INX H
-002B  13                	INX D
-002C  0C                	INR C
-002D  05                	DCR B
-002E  C2 1700           	JNZ LOOP
-0031                    END:	
-0031  EB                	XCHG			; Save DE in DEST so next call can skip DCINIT
-0032  22 0400           	SHLD DEST
-0035  EB                	XCHG			; Not needed, just being overly fastidious
-0036  E1                	POP H
-0037  71                	MOV M, C		; Write new length to BASIC string
+0015  78                	MOV A, B
+0016  A7                	ANA A
+0017  CA 3400           	JZ END			; Zero-length string?
+001A                    LOOP:	
+001A  7E                	MOV A, M		; Get next byte from source (*HL)
+001B  FE 21             	CPI '!'
+001D  C2 2800           	JNZ WRITE		; If not '!' just copy the character.
+0020  05                	DCR B
+0021  CA 3400           	JZ END			; Ignore escape char with no following char.
+0024  23                	INX H			; Char is '!' so get next char in A
+0025  7E                	MOV A, M
+0026  EE 80             	XRI 128			; Decode character by flipping bit 7
+0028                    WRITE:	
+0028  EB                	XCHG
+0029  D6                	DB D6h			; D6 is SUI instruction.
+002A  00                ROT:	DB 0			; Subtract this value from char.
+002B  77                	MOV M, A		; Copy the byte from *HL to *DE.
+002C  EB                	XCHG
+002D  23                	INX H
+002E  13                	INX D
+002F  0C                	INR C
+0030  05                	DCR B
+0031  C2 1A00           	JNZ LOOP
+0034                    END:	
+0034  EB                	XCHG			; Save DE in DEST so next call can skip DCINIT
+0035  22 0700           	SHLD DEST
+0038  EB                	XCHG			; Not needed, just being overly fastidious
+0039  E1                	POP H
+003A  71                	MOV M, C		; Write new length to BASIC string
                         	
-0038  C9                	RET
+003B  C9                	RET
 
 00000 Total Error(s)
 
-DCINIT             00000000    DEST               00000004    END                00000031
-LOOP               00000017    MAIN               00000006    WRITE              00000025
+DCINIT             00000000    DEST               00000007    END                00000034
+LOOP               0000001A    MAIN               00000009    ROT                0000002A
+WRITE              00000028

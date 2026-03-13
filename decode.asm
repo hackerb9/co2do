@@ -42,15 +42,13 @@
 
 	ORG 0			; The BASIC loader relocates this routine.
 DCINIT:	
+	STA ROT			; Save A as Rotation Offset for charset
 	SHLD DEST		; Save HL in DEST as destination address. 
 	RET
 
 DEST:	DW 0
 
 MAIN:	
-	;; A is Rotation offset subtracted from each character
-	STA ROT
-
 	;; HL starts as VARPTR(P$) where P$ is bang-encoded.
 	PUSH H
 	MOV B, M		; B is length of input string
@@ -76,8 +74,8 @@ LOOP:
 	XRI 128			; Decode character by flipping bit 7
 WRITE:	
 	XCHG
-	DB D6h			; D6 is SUI instruction
-ROT:	DB 136			; This value is subtracted from char
+	DB D6h			; D6 is SUI instruction.
+ROT:	DB 0			; Subtract this value from char.
 	MOV M, A		; Copy the byte from *HL to *DE. 
 	XCHG
 	INX H
