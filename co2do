@@ -108,21 +108,21 @@ function emitdata() {
 
 function emitmldecode() {
     # BASIC wrapper for the M/L routine to decode DATA strings fast.
-    # Sets the BASIC variable DC to the address of the routine.
+    # Sets the BASIC variable DX to the address of the routine.
     # NB: the machine language is stored in a BASIC string and called
     # directly, so any further string manipulations in BASIC can foul
     # it up. (READ is okay.)
     cat <<-EOF
 	12000 'Fast loader
-	12010 DC$=SPACE\$(255): IF PEEK(1)<>148 THEN D=VARPTR(DC$): ELSE VY$="DC$": GOSUB 40000: D=L+256*H
-	12015 DC=PEEK(D+1)+256*PEEK(D+2): Q=DC
+	12010 DC$=SPACE\$(255): IF PEEK(1)<>148 THEN DC=VARPTR(DC$): ELSE VY$="DC$": GOSUB 40000: DC=L+256*H
+	12015 DX=PEEK(DC+1)+256*PEEK(DC+2): Q=DX
 	12020 READ X
 	12030 IF X=-1 THEN 12080
-	12040 IF X=-7 THEN READ L: READ H: A=H*256+L+DC: X=INT(A/256): L=A-X*256: POKE Q, L: Q=Q+1
+	12040 IF X=-7 THEN READ L: READ H: A=H*256+L+DX: X=INT(A/256): L=A-X*256: POKE Q, L: Q=Q+1
 	12050 POKE Q, X
 	12060 Q=Q+1
 	12070 GOTO 12020
-	12080 POKE D, Q-DC: 'Set length of DC$
+	12080 POKE DC, Q-DX: 'Set length of DC$
 	12090 RETURN
 	EOF
     dodo decode.asm.lst
@@ -130,14 +130,14 @@ function emitmldecode() {
 
 function emitbasicdecode() {
     # Calls M/L routine to decode and install each DATA string.
-    # DC is the start address of decode.asm, set by emitmlcode().
+    # DX is the start address of decode.asm, set by emitmlcode().
     # TP is the destination address ("TOP"), set by main().
     cat <<-"EOF"
 	13000 REM ?"Loading "NM$" ("LN" bytes) at "TP
 	13010 RESTORE 13000
-	13020 IF PEEK(1)<>148 THEN CALL DC, RT, TP: ELSE H=(TP)/256: L=TP-H*256: POKE 63912, L: POKE 63913, H: EXEC DC
+	13020 IF PEEK(1)<>148 THEN CALL DX, RT, TP: ELSE H=(TP)/256: L=TP-H*256: POKE 63912, L: POKE 63913, H: EXEC DX
 	13030 READP$: IF P$="!!" GOTO 13080
-	13040 IF PEEK(1)<>148 THEN P=VARPTR(P$): CALL DC+9, 0, P: ELSE VY$="P$": GOSUB 40000: POKE 63912, L: POKE 63913, H: EXEC DC+9
+	13040 IF PEEK(1)<>148 THEN P=VARPTR(P$): CALL DX+9, 0, P: ELSE VY$="P$": GOSUB 40000: POKE 63912, L: POKE 63913, H: EXEC DX+9
 	13060 GOTO 13030
 	13080 'All done
 	13090 ?:RETURN
