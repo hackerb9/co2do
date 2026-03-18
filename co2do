@@ -8,7 +8,8 @@
 
 # This program uses a small assembly routine to decode and write the
 # bytes to memory, which is a hundred times faster than doing it in
-# BASIC. See decode.asm and the dodo() function.
+# BASIC. (For details see decode.asm and embedasm which writes the
+# decode() function below.)
 #
 # USAGE: co2do.sh FOO.CO FOO.DO
 #        Transfer FOO.DO to M100.
@@ -168,160 +169,14 @@ emitnecvarptr() {
 	EOF
 }
 
-
-# XXX todo: update this from decode.asm.lst automatically.
-DECODEASMLST=$(cat <<EOF
-                        	;; Given a destination address and the varptr of a BASIC
-                        	;; string, copy the source string to the destination,
-                        	;; processing !-escapes by replacing each '!' with the
-                        	;; subsequent character with the high-bit flipped.
-
-                        	;; Calling is a two step process. First, the destination
-                        	;; address is sent from BASIC in HL by calling DCINIT.
-                        	;; Second, MAIN (= DCINIT+6) is called with the varptr of
-                        	;; the source string in HL.
-
-                        	;; The call to DCINIT also specifies a number in register A
-                        	;; from 0 to 255 to be subtracted from every byte. This allows
-                        	;; the coding to be more efficient by rotating the character
-                        	;; set.
-
-                        	;; Upon return, the length of the source string is modified to
-                        	;; reflect the actual number of characters written to the
-                        	;; destination address. The source string data is NOT changed.
-
-                        	;; Example usage from BASIC:
-                        	;;      10 DC=(DCINIT address after relocation)
-                        	;; 	15 A=(rotation offset or 0)
-                        	;;      20 Q=(destination buffer address)
-                        	;; 	30 READ P$: IF P$="EOD" THEN END
-                        	;;  	40 CALL DC, A, Q
-                        	;; 	50 CALL DC+6, 0, VARPTR(P$)
-                        	;; 	60 Q=Q+LEN(P$)
-                        	;; 	70 GOTO 30
-                        	;;
-                        	;; When appending multiple strings to the same buffer, the
-                        	;; destination address does not need to be updated each time.
-                        	;; The following is equivalent to the above code:
-
-                        	;;      10 DC=(DCINIT address after relocation)
-                        	;; 	15 A=(rotation offset or 0)
-                        	;;  	20 CALL DC, A, (destination buffer address)
-                        	;; 	30 READ P$: IF P$="EOD" THEN END
-                        	;; 	40 CALL DC+6, 0, VARPTR(P$)
-                        	;; 	50 GOTO 30
-
-0000                    	CPU 8085		; Build with asmx -w -e -l -b0 decode.asm
-
-0000                    	ORG 0			; The BASIC loader relocates this routine.
-0000                    DCINIT:	
-0000  32 2A00           	STA ROT			; Save A as Rotation Offset for charset
-0003  22 0700           	SHLD DEST		; Save HL in DEST as destination address.
-0006  C9                	RET
-
-0007  0000              DEST:	DW 0
-
-0009                    MAIN:	
-                        	;; HL starts as VARPTR(P$) where P$ is bang-encoded.
-0009  E5                	PUSH H
-000A  46                	MOV B, M		; B is length of input string
-000B  0E 00             	MVI C, 0		; C will be resulting length
-000D  23                	INX H
-000E  5E                	MOV E, M		; Load actual address of string into DE
-000F  23                	INX H
-0010  56                	MOV D, M
-0011  2A 0700           	LHLD DEST		; Restore HL from saved DEST
-0014  EB                	XCHG			; Now HL is P$'s actual address
-                        				; and DE is address of destination
-0015  78                	MOV A, B
-0016  A7                	ANA A
-0017  CA 3400           	JZ END			; Zero-length string?
-001A                    LOOP:	
-001A  7E                	MOV A, M		; Get next byte from source (*HL)
-001B  FE 21             	CPI '!'
-001D  C2 2800           	JNZ WRITE		; If not '!' just copy the character.
-0020  05                	DCR B
-0021  CA 3400           	JZ END			; Ignore escape char with no following char.
-0024  23                	INX H			; Char is '!' so get next char in A
-0025  7E                	MOV A, M
-0026  EE 80             	XRI 128			; Decode character by flipping bit 7
-0028                    WRITE:	
-0028  EB                	XCHG
-0029  D6                	DB D6h			; D6 is SUI instruction.
-002A  00                ROT:	DB 0			; Subtract this value from char.
-002B  77                	MOV M, A		; Copy the byte from *HL to *DE.
-002C  EB                	XCHG
-002D  23                	INX H
-002E  13                	INX D
-002F  0C                	INR C
-0030  05                	DCR B
-0031  C2 1A00           	JNZ LOOP
-0034                    END:	
-0034  EB                	XCHG			; Save DE in DEST so next call can skip DCINIT
-0035  22 0700           	SHLD DEST
-0038  EB                	XCHG			; Not needed, just being overly fastidious
-0039  E1                	POP H
-003A  71                	MOV M, C		; Write new length to BASIC string
-                        	
-003B  C9                	RET
-
-00000 Total Error(s)
-
-DCINIT             00000000    DEST               00000007    END                00000034
-LOOP               0000001A    MAIN               00000009    ROT                0000002A
-WRITE              00000028
-EOF
-)
-
-function dodo() {
-    # dodo: DATA output decode.asm to .DO.
-    # Given the filename of an assembly listing (from `asmx -l`), output
-    # the bytes as decimal values separated by commas in a DATA statement.
-    # Addresses that will need to be relocated are prefixed with -7.
-    # End of data is signaled by -1.
-
-    # Use the cached copy in $DECODEASMLST, unless the file
-    # "decode.asm.lst" exists in the current directory,
-    if [[ -r "decode.asm.lst" ]]; then
-	DECODEASMLST=$(cat "decode.asm.lst")
-    fi
-    echo -n "12500 DATA "
-    echo "$DECODEASMLST" | parselst
-    echo -1
-    return
+### BEGIN AUTOMATIC EMBED ### decode.asm.lst 2026-03-18 02:03:24
+#### DO NOT EDIT! Added automatically by embedasm.
+decode() {
+    cat <<-'EOT'
+	12500 DATA 50,-7,42,0,34,-7,7,0,201,0,0,229,70,14,0,35,94,35,86,42,-7,7,0,235,120,167,202,-7,52,0,126,254,33,194,-7,40,0,5,202,-7,52,0,35,126,238,128,235,214,0,119,235,35,19,12,5,194,-7,26,0,235,34,-7,7,0,235,225,113,201,-1
+	EOT
 }
-
-function parselst() {
-    # Parse an assembly listing on stdin and output data values.
-    # Whenever an address is seen, prefix it with -7.
-    # This routine is fragile, but it only needs to work with one
-    # program: decode.asm (which see). Also see, dodo().
-    sed -rn '/^[0-9A-Fa-f]{4} /p' | cut -c 6-19 |
-	while read op arg; do
-	    case ${#op} in
-		0) continue ;;
-		2) echo "ibase=16; $op" | bc ;;
-		4) # Data for DW looks like a 16-bit opcode.
-		    echo "ibase=16; ${op:0:2}" | bc
-		    echo "ibase=16; ${op:2:2}" | bc
-		    ;;
-		*)
-		    echo "parselst error: What is op in '$op $arg'?" >&2
-	    esac
-	    case ${#arg} in
-		0) continue ;;
-		2) echo "ibase=16; $arg" | bc ;;
-		4) # Escape address for relocation with -7
-		    echo -7
-		    echo "ibase=16; ${arg:0:2}" | bc
-		    echo "ibase=16; ${arg:2:2}" | bc
-		    ;;
-		*)
-		    echo "parselst error: What is arg in '$op $arg'?" >&2
-	    esac
-	done | tr -s '\n' ','
-}
-
+### END AUTOMATIC EMBED ###
 
 {    # CLI args
     tandycharset=cat

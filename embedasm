@@ -1,0 +1,95 @@
+#!/bin/bash
+
+# Given a shell script in $1 and an assembly listing in $2,
+# parse the assembly listing into bytes which will be copied unchanged
+# and addresses which must be offset when the program is loaded.
+
+# The assembly listing must be created by 'asmx -l -b0 foo.asm'.
+# The shell script must contain two lines which read, 
+# 	#### BEGIN AUTOMATIC EMBED  ####
+# and
+# 	#### END AUTOMATIC EMBED  ####
+
+begin="### BEGIN AUTOMATIC EMBED ###"
+end='### END AUTOMATIC EMBED ###'
+main() {
+    [[ $# -ge 2 ]] || die "Usage: $0 co2do decode.asm.lst"
+    script="$1"
+    list="$2"
+    [[ -r "$script" ]] || die "'$script' to modify is not readable"
+    [[ -r "$list" ]] || die "'$list' is not readable. Please create with asmx -l -b0 ${list%.lst}"
+    grep -sq "$begin" "$script" \
+	&& grep -sq "$end" "$script" \
+	    || die "The shell script '$script' must contain the two lines:\n\n"\
+		   "\t$begin\n" "\t$end\n"
+
+    # Sed's C command requires every line of the replacement text to
+    # end with a \ before the newline, EXCEPT the last line.
+    automaticembed=$(cat <<EOF | sed 's/$/\\/; $ s/\\/\n/'
+$begin $(TZ=GMT stat -c"%n %y" $list | sed -r 's/\.[0-9]{9} \+0000//')
+#### DO NOT EDIT! Added automatically by $(basename "$0").
+${list%%.*}() {
+    cat <<-'EOT'
+	$(coco "$list")
+	EOT
+}
+$end
+EOF
+    )
+
+    sed -i "/$begin/,/$end/ c $automaticembed"  "$script"
+}
+
+function coco() {
+    # coco: 
+    # Given the filename of an assembly listing (from `asmx -l -b0`), 
+    # output the bytes as comma separated decimal in a DATA statement.
+    # Addresses that will need to be relocated are prefixed with -7.
+    # End of data is signaled by -1.
+    local listfile="$1"
+    echo -n "12500 DATA "
+    cat "$listfile"  | parselst
+    echo -1
+    return
+}
+
+function parselst() {
+    # Parse an assembly listing on stdin and output data values.
+    # Whenever an address is seen, prefix it with -7.
+    # This routine is fragile, but it only needs to work with one
+    # assembler (asmx) and one program: decode.asm (which see). 
+    sed -rn '/^[0-9A-Fa-f]{4} /p' | cut -c 6-19 |
+	while read op arg; do
+	    case ${#op} in
+		0) continue ;;
+		2) echo "ibase=16; $op" | bc ;;
+		4) # Data for DW looks like a 16-bit opcode.
+		    echo "ibase=16; ${op:0:2}" | bc
+		    echo "ibase=16; ${op:2:2}" | bc
+		    ;;
+		*)
+		    echo "parselst error: What is op in '$op $arg'?" >&2
+	    esac
+	    case ${#arg} in
+		0) continue ;;
+		2) echo "ibase=16; $arg" | bc ;;
+		4) # Escape address for relocation with -7
+		    echo -7
+		    echo "ibase=16; ${arg:0:2}" | bc
+		    echo "ibase=16; ${arg:2:2}" | bc
+		    ;;
+		*)
+		    echo "parselst error: What is arg in '$op $arg'?" >&2
+	    esac
+	done | tr -s '\n' ','
+    return
+}
+
+die() {
+    printf "$(basename $0): ERROR: "
+    echo -e "$@" >&2
+    exit 1
+}
+    
+
+main "$@"
