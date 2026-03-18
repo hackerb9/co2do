@@ -1,8 +1,12 @@
 # co2do
 
 Given a .CO machine language file for a TRS-80 Model 100 (or similar),
-creates a .DO file containing a BASIC loader which will install the .CO
-to the correct address using POKE and then start it.
+creates a .DO file containing a BASIC loader which will install the
+.CO to the correct address using a very fast machine language routine,
+save it to a file (if there is space), and start it.
+
+Works on all of the Kyotronic Sisters: Kyocera Kyotronic 85, TRS-80
+Model 100/102, Tandy 200, Olivetti M10, NEC PC-8201/8201A/8300.
 
 ## Usage
 
@@ -29,20 +33,23 @@ chmod +x co2do
 
 ## Features
 
+* As a plain text file, the .DO format can be easily downloaded
+  without additional software.
+
+* BASIC loader writes .CO to memory very quickly (less than a second).
+
 * Inspired by Stephen Adolph's efficient encoding scheme which
   increases storage size by at most 2x + k (where k is approx. 500),
   and on average closer to 1.3x + k.
 
-* Works on any of the Kyotronic Sisters: 
-    Kyocera Kyotronic 85, TRS-80 Model 100/102, Tandy 200, 
-    NEC PC-8201A/8300, and Olivetti M10.
+* Works on any portable computer descended from the Kyocera Kyotronic
+  85: The TRS-80 Model 100/102, Tandy 200, NEC PC-8201A/8300, and
+  Olivetti M10.
 
-* BASIC Automatically CLEARs the correct space and CALLs the program.
+* BASIC Automatically CLEARs the correct space, SAVEMs the .CO file,
+  and CALLs the program. (Exception: NEC PCs end after BSAVE).
 
 * Uses .CO header to detect where to POKE, length mismatch, and CALL addr.
-
-* Warns if the .CO file may not run on certain machines. (E.g., for 8K
-  machines if TOP<=57777; for the Tandy 200 if END>=61104).
 
 * As a special bonus, if you use the `-t` option, it will display a
   Unicode version of the program instead of writing to a .DO file.
@@ -60,8 +67,16 @@ chmod +x co2do
 * Too big: BASIC loader increases .CO size 1.3x + 500 bytes. This
   means some valid .CO programs may not be usable.
 
-* Too slow: A 1500 byte .CO files takes about 40 seconds just to load
-  into memory. _(That's 300 baud!)_
+* ~~Too slow: A 1500 byte .CO files takes about 40 seconds just to load
+  into memory. _(That's 300 baud!)_~~
+
+  * It was too slow, but now that I've added a M/L routine to move the
+    data, it is super fast (once BASIC has tokenized it) but it is
+    much, much too big. The constant k is now closer to 1000 bytes.
+
+  * A large part of the increase was the need to add special handling
+    for the NEC PC-8201 which lacks VARPTR and uses a different syntax
+    for machine language programs.
 
 * If memory is small and the file is large, you can get an ?OM error
   when the .DO file is RUN. The solution is to not transfer the .DO
@@ -73,6 +88,10 @@ chmod +x co2do
 	 * NEC PC-8201/8300<br/>`run "COM:8N81XN"`
   2. Then on your host PC, send the file to the serial port. For example,
 	 GNU/Linux machines can do `cat FILENM.DO >/dev/ttyUSB0`
+
+* No longer warns if the .CO file may not run on certain machines.
+  (E.g., for 8K machines if TOP<=57777; for the Tandy 200 if
+  END>=61104).
 
 See [todo.md](todo.md) for more specifics.
 
