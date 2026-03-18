@@ -129,7 +129,7 @@ function emitmldecode() {
 	12080 POKE DC, Q-DX: 'Set length of DC$
 	12090 RETURN
 	EOF
-    dodo
+    decode
 }
 
 function emitbasicdecode() {
@@ -169,7 +169,7 @@ emitnecvarptr() {
 	EOF
 }
 
-### BEGIN AUTOMATIC EMBED ### decode.asm.lst 2026-03-18 02:03:24
+### BEGIN AUTOMATIC EMBED ### decode.asm.lst 2026-03-18 03:03:25
 #### DO NOT EDIT! Added automatically by embedasm.
 decode() {
     cat <<-'EOT'
