@@ -72,6 +72,9 @@ function main() {
 	fi
     fi
     if (( TOP<62960 && TOP>32767 )); then clear=", $TOP"; else clear=""; fi
+    # We'll be POKEing into and executing the fast M/L decoder
+    # directly out of the space allocated for DC$, so we need to make
+    # sure it doesn't move around in memory as BASIC is wont to do.
     cat <<-EOF
 	10 MAXFILES=0: CLEAR 256$clear: NM$="${coname}"
 	20 TP=$((TOP)): LN=$LEN: EX=$((EXE)): RT=$((ROT)): ID=PEEK(1)
@@ -112,11 +115,24 @@ function emitdata() {
 }
 
 function emitmldecode() {
-    # BASIC wrapper for the M/L routine to decode DATA strings fast.
+    # BASIC wrapper for the M/L routine to decode bang-code DATA strings.
     # Sets the BASIC variable DX to the address of the routine.
-    # NB: the machine language is stored in a BASIC string and called
-    # directly, so any further string manipulations in BASIC can foul
-    # it up. (READ is okay.)
+    # (See routine starting at lines 13000 for example usage.)
+    #
+    # NOTA BENE: DX is actually the address of DC$'s buffer. The
+    # machine language is POKEd directly into and executed from the
+    # string, so manipulation of other string variables in BASIC can
+    # foul it up. (READ is okay as it merely sets variables to point
+    # to the program line.)
+
+    # USAGE: Initialize by calling DX with A set to the rotation
+    # (charset offset) and HL set to the destination address for the
+    # decoded data. In a loop, read encoded data into P$ and call DX+9
+    # with HL set to the VARPTR(P$). Re-initialization is not
+    # necessary for each P$; each call to DX+9 appends data to the
+    # destination. While probably not useful, at the end of each call
+    # the length of P$ is set to the number of decoded bytes written.
+
     cat <<-EOF
 	12000 'Fast loader
 	12010 IF PEEK(1)<>148 THEN DC=VARPTR(DC$): ELSE VY$="DC$": GOSUB 40000: DC=L+256*H
@@ -157,7 +173,12 @@ emitnecvarptr() {
     #   100 A$="This is a sample string."
     #   110 VY$="A$":GOSUB 40000
     #   120 PRINT "VARPTR of ";VY$;" is ";L+(H*256)
+    # NOTES From hackerb9: 
     # * Minor modifications to use less RAM and string space. --b9 2026
+    # * M/L routine placed at 64448 for performing VARPTR.
+    # * Address 64457 is an 8-byte, NULL terminated copy of VY$.
+    # * This routine passes 64457 in HL when it EXECs 64448.
+    # * The result is read out of HL (addresses 63912,3) and A (63911).
     cat <<-EOF
 	39999 'VARPTR by Gary Weber for NEC 8201/8300
 	40000 A=64448
@@ -167,7 +188,7 @@ emitnecvarptr() {
 	40035 A=64457 ' HL register for EXEC = 201/251
 	40040 FORH=1TOLEN(VY$):POKEA,ASC(MID\$(VY$,H,1)):A=A+1:NEXT:POKEA,0:POKE64464,0
 	40050 POKE63912,201:POKE63913,251:EXEC64448
-	40060 L=PEEK(63912!):H=PEEK(63913!):TY=PEEK(63911!)
+	40060 L=PEEK(63912):H=PEEK(63913):TY=PEEK(63911)
 	40070 RETURN
 	EOF
 }
