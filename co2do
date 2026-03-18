@@ -77,7 +77,7 @@ function main() {
 	20 TP=$((TOP)): LN=$LEN: EX=$((EXE)): RT=$((ROT)): ID=PEEK(1)
 	40 GOSUB 12000: GOSUB 13000
 	50 IF FRE(0) < LN THEN ?"Insufficient space to save "NM$: Q$=CHR\$(34): C$=",":?"Please try NEW then SAVEM "Q$;NM$;Q$;C$;TP;C$;TP+LN;C$;EX: END
-	60 IF ID<>148 THEN SAVEM NM$,TP,TP+LN,EX ELSE BSAVE NM$,TP,TP+LN,EX
+	60 IF ID<>148 THEN SAVEM NM$,TP,TP+LN,EX ELSE BSAVE NM$,TP,LN,EX
 	80 IF ID<>148 THEN CALL EX ELSE EXEC EX
 	90 END
 	EOF
@@ -135,6 +135,7 @@ function emitmldecode() {
 function emitbasicdecode() {
     # Calls M/L routine to decode and install each DATA string.
     # DX is the start address of decode.asm, set by emitmlcode().
+    # RT is the amount of rotation for the character set.
     # TP is the destination address ("TOP"), set by main().
     cat <<-"EOF"
 	13000 REM ?"Loading "NM$" ("LN" bytes) at "TP
@@ -149,7 +150,7 @@ function emitbasicdecode() {
 }
 
 emitnecvarptr() {
-    # VARPTR by Gary Weber of web8201.net
+    # VARPTR for NEC 8201/8300 by Gary Weber of web8201.net
     # Entry: VY$ must contain the name of variable of interest
     # Exit: H & L contain variable's address, TY contains type
     # Example:
