@@ -1,12 +1,23 @@
 # co2do
 
-Given a .CO machine language file for a TRS-80 Model 100 (or similar),
-creates a .DO file containing a BASIC loader which will install the
-.CO to the correct address using a very fast machine language routine,
-save it to a file (if there is space), and start it.
+Convert .CO file to .DO (BASIC Loader) for easy download.
 
-Works on all of the Kyotronic Sisters: Kyocera Kyotronic 85, TRS-80
-Model 100/102, Tandy 200, Olivetti M10, NEC PC-8201/8201A/8300.
+Machine language programs (.CO files) cannot be downloaded over the
+serial port using the built-in software on a TRS-80 Model 100 (or
+similar). The usual solution is to install more software (Teeny,
+TSDOS, HTERM). This program is an alternative that requires no extra
+software.
+
+Given a .CO file, co2do creates a .DO file that the built-in tools can
+handle. The DO file contains a BASIC loader program that installs the
+.CO data to the correct memory address using a very fast machine
+language routine, saves the .CO file to the filesystem, and
+launches it.
+
+The design goals of this program are to be universal and simple to use.
+
+The most important limitation is that co2do currently creates extra
+large .DO file which may not fit on smaller machines.
 
 ## Usage
 
@@ -27,29 +38,35 @@ chmod +x co2do
 ./co2do FOO.CO
 ```
 
-> This script depends on UNIX tools like `od` and `awk`, so any
-> POSIX-compliant system with bash can work. (Linux definitely, BSD
-> should, MacOS could, WSL ???).
+> _This script depends on UNIX tools like `od` and `sed`, so any
+> POSIX-compliant system with bash can work. (Linux definitely does,
+> BSD should, MacOS could, WSL ???)._
 
 ## Features
 
-* As a plain text file, the .DO format can be easily downloaded
-  without additional software.
+* Creates .DO files that can be easily loaded over the serial port
+  without any extra software. (For example, `RUN "COM:88N1".) 
+  
+* The .DO file includes the ^Z marker at the end so no software is
+  needed on your host computer either: Anything that can write to the
+  serial port will work. (Even the DOS "COPY" command!)
 
-* BASIC loader writes .CO to memory very quickly (less than a second).
+* Once loaded, co2do writes .CO to memory very quickly (less than a
+  second). The same task in BASIC takes minutes.
 
-* Inspired by Stephen Adolph's efficient encoding scheme which
-  increases storage size by at most 2x + k (where k is approx. 500),
-  and on average closer to 1.3x + k.
+* Inspired by Stephen Adolph's [efficient encoding scheme][bangcode]
+  which increases storage size by at most 2x + k (where k is approx.
+  500), and on average closer to 1.3x + k.
 
 * Works on any portable computer descended from the Kyocera Kyotronic
   85: The TRS-80 Model 100/102, Tandy 200, NEC PC-8201A/8300, and
   Olivetti M10.
 
-* BASIC Automatically CLEARs the correct space, SAVEMs the .CO file,
-  and CALLs the program. (Exception: NEC PCs end after BSAVE).
+* Automatically CLEARs the correct space, SAVEMs the .CO file, and
+  CALLs the program. (Exception: NEC PCs end after BSAVE).
 
-* Uses .CO header to detect where to POKE, length mismatch, and CALL addr.
+* Uses .CO header to detect destination address, length mismatch, and
+  CALL addr.
 
 * As a special bonus, if you use the `-t` option, it will display a
   Unicode version of the program instead of writing to a .DO file.
@@ -70,9 +87,10 @@ chmod +x co2do
 * ~~Too slow: A 1500 byte .CO files takes about 40 seconds just to load
   into memory. _(That's 300 baud!)_~~
 
-  * It was too slow, but now that I've added a M/L routine to move the
-    data, it is super fast (once BASIC has tokenized it) but it is
-    much, much too big. The constant k is now closer to 1000 bytes.
+  * It _was_ too slow, but now that I've added a M/L routine to move
+    the data, it is super fast (once BASIC has tokenized it) but it is
+    now much, much too big. The constant k is mentinoed above is
+    closer to 1000 bytes.
 
   * A large part of the increase was the need to add special handling
     for the NEC PC-8201 which lacks VARPTR and uses a different syntax
@@ -95,11 +113,51 @@ chmod +x co2do
 
 See [todo.md](todo.md) for more specifics.
 
-## See also
+## Design and Alternatives
 
-* Brian K. White includes in his dl2 project a very nice
-  [co2ba.sh][co2ba] program which is similar but has different
-  features. It allows one to specify the loading address and a comment
-  on the command line.
+Hackerb9 wrote co2do because none of the alternatives at the time were
+universal. Using co2do, a single .DO file can be offered that loads on
+any of the Kyotronic Sisters: Kyocera Kyotronic 85, TRS-80 Model
+100/102, Tandy 200, Olivetti M10, and NEC PC-8201/8201A/8300. While
+very [few][crc16] machine language programs can actually run unchanged
+on all of those machines, co2do will not impose any limitations.
+
+[crc16]: https://github.com/hackerb9/crc16-modelt/
+
+The secondary design goal is to be simple to use. One should be able
+to run co2do without reading any documentation. There are no switches
+to flip, no knobs to frob. It just works. (Or doesn't, depending upon
+your viewpoint. See co2ba, below.)
+
+A tertiary goal is to be extremely fast to unpack when run on a Model
+T computer. That is why hackerb9 wrote a tiny machine language program
+to [decode][bangcode] and copy the bytes into the correct location in
+RAM.
+
+Space efficiency is a goal, but not one of the most important ones. To
+save bytes, co2do uses an efficient encoding called "[bang
+code][bangcode]" (suggested originally by Stephen Adolf) which uses an
+exclamation mark to escape only the five characters which cannot be
+loaded into BASIC. Additionally, the character-set is "rotated" +136,
+so that more frequently used codes (like NULL) will not need to be
+escaped.
+
+[bangcode]: bangcode.md
+
+### Limitations
+
+The main downside of co2do is that the filesize increases
+significantly and some .CO files may not fit. If your programs are not
+working on 8K machines, hackerb9 recommends investigating co2ba.
+
+### See also
+
+* **co2ba** Brian K. White includes in his dl2 project a very nice
+  [co2ba.sh][co2ba] program which is similar in that it creates BASIC
+  loaders, but but has different features. It has been optimized for
+  space efficiency and is a good choice if you are tight on memory. It
+  also has more command line options, such as manually specifying the
+  loading address or the comment to be shown to the user.
 
 [co2ba]: https://github.com/bkw777/dl2/blob/master/co2ba.md
+
