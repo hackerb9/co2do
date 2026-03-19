@@ -4,20 +4,18 @@ Convert .CO file to .DO (BASIC Loader) for easy download.
 
 Machine language programs (.CO files) cannot be downloaded over the
 serial port using the built-in software on a TRS-80 Model 100 (or
-similar). The usual solution is to install more software (Teeny,
-TSDOS, HTERM). This program is an alternative that requires no extra
+kin). The usual solution is to install more software (Teeny, TSDOS,
+HTERM). This program is an alternative that requires no extra
 software.
 
 Given a .CO file, co2do creates a .DO file that the built-in tools can
-handle. The DO file contains a BASIC loader program that installs the
-.CO data to the correct memory address using a very fast machine
-language routine, saves the .CO file to the filesystem, and
-launches it.
+handle. The .DO file contains a BASIC loader that installs the .CO
+data to the correct memory address using a very fast machine language
+routine, saves the .CO file, and launches it.
 
-The design goals of this program are to be universal and simple to use.
-
-The most important limitation is that co2do currently creates extra
-large .DO file which may not fit on smaller machines.
+Co2do is simple to use and fast. The most important limitation is that
+it currently creates rather large .DO files (+2K) which may not fit on
+smaller machines.
 
 ## Usage
 
@@ -40,38 +38,43 @@ chmod +x co2do
 
 > _This script depends on UNIX tools like `od` and `sed`, so any
 > POSIX-compliant system with bash can work. (Linux definitely does,
-> BSD should, MacOS could, WSL ???)._
+> BSD should, MacOS could, Windows WSL ???)._
 
 ## Features
-
-* Creates .DO files that can be easily loaded over the serial port
-  without any extra software. (For example, `RUN "COM:88N1".) 
-  
-* The .DO file includes the ^Z marker at the end so no software is
-  needed on your host computer either: Anything that can write to the
-  serial port will work. (Even the DOS "COPY" command!)
-
-* Once loaded, co2do writes .CO to memory very quickly (less than a
-  second). The same task in BASIC takes minutes.
-
-* Inspired by Stephen Adolph's [efficient encoding scheme][bangcode]
-  which increases storage size by at most 2x + k (where k is approx.
-  500), and on average closer to 1.3x + k.
 
 * Works on any portable computer descended from the Kyocera Kyotronic
   85: The TRS-80 Model 100/102, Tandy 200, NEC PC-8201A/8300, and
   Olivetti M10.
 
-* Automatically CLEARs the correct space, SAVEMs the .CO file, and
-  CALLs the program. (Exception: NEC PCs end after BSAVE).
+* Uses the .CO header to detect destination address, length mismatch,
+  and CALL addr.
 
-* Uses .CO header to detect destination address, length mismatch, and
-  CALL addr.
+* Creates .DO files that can be easily loaded over the serial port
+  without any extra software. (For example, `RUN "COM:88N1"`.) 
+  
+* Includes the ^Z marker at the end of the .DO file so no software is
+  needed on your host computer, either. Anything that can write to the
+  serial port will work — Even the DOS "COPY" command!
+
+* Once transferred, the BASIC loader writes the .CO to memory in less
+  than a second using a machine language routine. (Previously, the same
+  task took minutes in BASIC.)
+
+* Automatically CLEARs the correct space, SAVEMs the .CO file, and
+  CALLs the program. (Exception: NEC PCs can either BSAVE or EXEC but
+  not both).
+
+* Inspired by Stephen Adolph's [efficient encoding scheme][bangcode]
+  which increases storage size by at most 2 _x_ + _k_ (where _x_ is
+  the size of the .CO file and _k_ is a constant for the boilerplate
+  BASIC code, currently around 2000). By rotating the character set by
+  a fixed offset, in practice, the increase is closer to 1.2 _x_ +
+  _k_.
 
 * As a special bonus, if you use the `-t` option, it will display a
   Unicode version of the program instead of writing to a .DO file.
   (Requires the [tandy-200.charmap file][charmap] from
-  [hackerb9/tandy-locale][tandy-locale].)
+  [hackerb9/tandy-locale][tandy-locale], included.)
   ![Example of -t output][charmapimg]
 
 [charmap]: https://raw.githubusercontent.com/hackerb9/co2do/main/tandy-200.charmap
@@ -81,20 +84,22 @@ chmod +x co2do
 
 ## Known issues
 
-* Too big: BASIC loader increases .CO size 1.3x + 500 bytes. This
-  means some valid .CO programs may not be usable.
+* Too big: The boilerplate BASIC code that gets added is huge (almost
+  2000 bytes) completely swamping the savings from the efficient
+  encoding. This means some valid .CO programs may not be usable.
 
 * ~~Too slow: A 1500 byte .CO files takes about 40 seconds just to load
   into memory. _(That's 300 baud!)_~~
 
   * It _was_ too slow, but now that I've added a M/L routine to move
-    the data, it is super fast (once BASIC has tokenized it) but it is
-    now much, much too big. The constant k is mentinoed above is
-    closer to 1000 bytes.
+    the data, it is super fast. And... super bloated.
+
+  * The program has not been optimized yet for size, so there is a lot
+    of room for improvement.
 
   * A large part of the increase was the need to add special handling
-    for the NEC PC-8201 which lacks VARPTR and uses a different syntax
-    for machine language programs.
+    for the NEC PC-8201 which lacks VARPTR and uses EXEC/BSAVE instead
+    of CALL/SAVEM.
 
 * If memory is small and the file is large, you can get an ?OM error
   when the .DO file is RUN. The solution is to not transfer the .DO
@@ -122,7 +127,7 @@ any of the Kyotronic Sisters: Kyocera Kyotronic 85, TRS-80 Model
 very [few][crc16] machine language programs can actually run unchanged
 on all of those machines, co2do will not impose any limitations.
 
-[crc16]: https://github.com/hackerb9/crc16-modelt/
+[crc16]: https://github.com/hackerb9/crc16-modelt/ "Here's one universal .CO program: CRC16"
 
 The secondary design goal is to be simple to use. One should be able
 to run co2do without reading any documentation. There are no switches
@@ -130,17 +135,19 @@ to flip, no knobs to frob. It just works. (Or doesn't, depending upon
 your viewpoint. See co2ba, below.)
 
 A tertiary goal is to be extremely fast to unpack when run on a Model
-T computer. That is why hackerb9 wrote a tiny machine language program
-to [decode][bangcode] and copy the bytes into the correct location in
+T computer. That is why hackerb9 wrote the machine language to
+[decode][bangcode] and copy the bytes into the correct location in
 RAM.
 
-Space efficiency is a goal, but not one of the most important ones. To
-save bytes, co2do uses an efficient encoding called "[bang
-code][bangcode]" (suggested originally by Stephen Adolf) which uses an
-exclamation mark to escape only the five characters which cannot be
-loaded into BASIC. Additionally, the character-set is "rotated" +136,
-so that more frequently used codes (like NULL) will not need to be
-escaped.
+While space efficiency is a goal, no optimization beyond the encoding
+has been attempted as correctness and speed seemed more important.
+
+To save bytes, co2do uses an efficient encoding called "[bang
+code][bangcode]" (suggested originally by Stephen Adolf),
+characterized by DATA statements contains an exclamation mark to
+escape only the five characters which cannot be loaded into BASIC.
+Additionally, the character-set is "rotated" +136, so that more
+frequently used codes (like NULL) will not need to be escaped.
 
 [bangcode]: bangcode.md
 
