@@ -1,21 +1,25 @@
 # co2do
 
-Convert .CO file to .DO (BASIC Loader) for easy download.
+Convert a .CO (machine language) file to .DO (BASIC Loader) for easy download.
 
 Machine language programs (.CO files) cannot be downloaded over the
 serial port using the built-in software on a TRS-80 Model 100 (or
-kin). The usual solution is to install more software (Teeny, TSDOS,
-HTERM). This program is an alternative that requires no extra
-software.
+kin). The usual solution is to install more software ([Teeny][teeny],
+[TSDOS][tsdos], [TBACK][tback]). This program is an alternative that
+tries to make it as easy as possible for the end user.
+
+[teeny]: https://www.youtube.com/watch?v=H0xx9cOe97s
+[tsdos]: https://www.club100.org/library/doc/tsdos.html
+[tback]: https://bitchin100.com/wiki/index.php?title=TBACK
 
 Given a .CO file, co2do creates a .DO file that the built-in tools can
 handle. The .DO file contains a BASIC loader that installs the .CO
 data to the correct memory address using a very fast machine language
 routine, saves the .CO file, and launches it.
 
-Co2do is simple to use and fast. The most important limitation is that
-it currently creates rather large .DO files (+2K) which may not fit on
-smaller machines.
+Co2do is simple to use and quite quick. The most important limitation
+is that it currently creates quite large .DO files (+2K) which may
+not fit on smaller machines.
 
 ## Usage
 
@@ -25,7 +29,7 @@ smaller machines.
 
 ## Installation
 
-It's just a shell script. Simply [download co2do][co2do], mark it
+It's a shell script. Simply [download co2do][co2do], mark it
 executable, and run it on any UNIX-ish operating system.
 
 [co2do]: https://raw.githubusercontent.com/hackerb9/co2do/main/co2do
@@ -102,8 +106,8 @@ chmod +x co2do
     of CALL/SAVEM.
 
 * If memory is small and the file is large, you can get an ?OM error
-  when the .DO file is RUN. The solution is to not transfer the .DO
-  file first, instead RUN it directly from the serial port:
+  when the .DO file is RUN. The solution is to transfer and run the
+  .DO file in a single step, directly from the serial port:
 
   1. Type this BASIC command (pick the one for your machine):
  	 * Model 100, Tandy 102, Kyotronic 85, Olivetti M10<br/>`run "COM:88N1"`
@@ -140,12 +144,13 @@ T computer. That is why hackerb9 wrote the machine language to
 RAM.
 
 While space efficiency is a goal, no optimization beyond the encoding
-has been attempted as correctness and speed seemed more important.
+has yet been attempted. That will come next now that correctness and
+speed have been taken care of.
 
 To save bytes, co2do uses an efficient encoding called "[bang
 code][bangcode]" (suggested originally by Stephen Adolf),
 characterized by DATA statements contains an exclamation mark to
-escape only the five characters which cannot be loaded into BASIC.
+escape only the characters which cannot be loaded into BASIC.
 Additionally, the character-set is "rotated" +136, so that more
 frequently used codes (like NULL) will not need to be escaped.
 
