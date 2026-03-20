@@ -18,12 +18,14 @@ def print_histogram_sums():
 def getsize(sums):
     '''Calculate the filesize after bang-encoding'''
     total = sum([sums[x] for x in sums]) \
-        + sum([sums[x] for x in range(35) if x!=9 and x!=32])
+        + sum([sums[x] for x in range(35) if x!=9 and x!=32]) \
+        + sums[127]
     return total
 
 def rotate(sums, k):
     '''Given the table of sums for various bytes, rotate it by k'''
     return { x:sums[(x+k)%256] for x in range(256) }
+
 
 if __name__ == "__main__":
     sums={x:0 for x in range(256)}
