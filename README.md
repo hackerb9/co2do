@@ -140,11 +140,11 @@ T computer. That is why hackerb9 wrote the machine language to
 RAM.
 
 While space efficiency is a goal, no optimization beyond the encoding
-has been attempted as correctness and speed seemed more important.
+has been attempted as correctness and speed came first.
 
 To save bytes, co2do uses an efficient encoding called "[bang
 code][bangcode]" (suggested originally by Stephen Adolf),
-characterized by DATA statements contains an exclamation mark to
+characterized by DATA statements containing an exclamation mark to
 escape only the few characters which cannot be loaded into BASIC.
 Additionally, the character-set is "rotated" +136, so that more
 frequently used codes (like NULL) will not need to be escaped.
