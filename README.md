@@ -4,7 +4,7 @@ Convert .CO file to .DO (BASIC Loader) for easy download.
 
 Machine language programs (.CO files) cannot be downloaded over the
 serial port using the built-in software on a TRS-80 Model 100 (or
-kin). The usual solution is to install more software (Teeny, TSDOS,
+kin). The usual solution is to install more software (Tiny, TSDOS,
 HTERM). This program is an alternative that requires no extra
 software.
 
@@ -13,9 +13,9 @@ handle. The .DO file contains a BASIC loader that installs the .CO
 data to the correct memory address using a very fast machine language
 routine, saves the .CO file, and launches it.
 
-Co2do is simple to use and fast. The most important limitation is that
-it currently creates rather large .DO files (+2K) which may not fit on
-smaller machines.
+Co2do is simple to use and fast for both the end user and the
+developer. The most important limitation is that it currently creates
+rather large .DO files (+2K) which may not fit on smaller machines.
 
 ## Usage
 
@@ -53,16 +53,16 @@ chmod +x co2do
   without any extra software. (For example, `RUN "COM:88N1"`.) 
   
 * Includes the ^Z marker at the end of the .DO file so no software is
-  needed on your host computer, either. Anything that can write to the
-  serial port will work — Even the DOS "COPY" command!
+  needed on your host computer, either. Anything that can write a file
+  to the serial port will work — Even the DOS "COPY" command!
 
 * Once transferred, the BASIC loader writes the .CO to memory in less
   than a second using a machine language routine. (Previously, the same
   task took minutes in BASIC.)
 
 * Automatically CLEARs the correct space, SAVEMs the .CO file, and
-  CALLs the program. (Exception: NEC PCs can either BSAVE or EXEC but
-  not both).
+  CALLs the program. (Exception: NEC PCs do not currently EXEC the
+  program as BSAVE stops the BASIC loader.)
 
 * Inspired by Stephen Adolph's [efficient encoding scheme][bangcode]
   which increases storage size by at most 2 _x_ + _k_ (where _x_ is
@@ -145,7 +145,7 @@ has been attempted as correctness and speed seemed more important.
 To save bytes, co2do uses an efficient encoding called "[bang
 code][bangcode]" (suggested originally by Stephen Adolf),
 characterized by DATA statements contains an exclamation mark to
-escape only the five characters which cannot be loaded into BASIC.
+escape only the few characters which cannot be loaded into BASIC.
 Additionally, the character-set is "rotated" +136, so that more
 frequently used codes (like NULL) will not need to be escaped.
 
@@ -155,16 +155,20 @@ frequently used codes (like NULL) will not need to be escaped.
 
 The main downside of co2do is that the filesize increases
 significantly and some .CO files may not fit. If your programs are not
-working on 8K machines, hackerb9 recommends investigating co2ba.
+working on 8K machines, hackerb9 recommends investigating BKW's co2ba, below.
 
 ### See also
 
 * **co2ba** Brian K. White includes in his dl2 project a very nice
   [co2ba.sh][co2ba] program which is similar in that it creates BASIC
-  loaders, but but has different features. It has been optimized for
-  space efficiency and is a good choice if you are tight on memory. It
-  also has more command line options, such as manually specifying the
-  loading address or the comment to be shown to the user.
+  loaders, but has different features. At the moment, it is slower
+  than hackerb9's co2do, but it has been optimized for space
+  efficiency and is a good choice if you are tight on memory. It also
+  sports many more options, such as manually specifying the loading
+  address or a comment to be shown to the user. You can even choose
+  older, less efficient encoding via environment variables, if you
+  wish. (Note: What Brian refers to as "!yEnc coding" is the same
+  thing as the [!-code][bangcode] used in hackerb9's co2do.)
 
 [co2ba]: https://github.com/bkw777/dl2/blob/master/co2ba.md
 
