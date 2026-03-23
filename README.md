@@ -4,6 +4,7 @@ Convert a .CO (machine language) file to .DO (BASIC Loader) for easy download.
 
 Machine language programs (.CO files) cannot be downloaded over the
 serial port using the built-in software on a TRS-80 Model 100 (or
+<<<<<<< HEAD
 kin). The usual solution is to install more software ([Teeny][teeny],
 [TSDOS][tsdos], [TBACK][tback]). This program is an alternative that
 tries to make it as easy as possible for the end user.
@@ -11,15 +12,34 @@ tries to make it as easy as possible for the end user.
 [teeny]: https://www.youtube.com/watch?v=H0xx9cOe97s
 [tsdos]: https://www.club100.org/library/doc/tsdos.html
 [tback]: https://bitchin100.com/wiki/index.php?title=TBACK
+||||||| 60b576f
+kin). The usual solution is to install more software (Teeny, TSDOS,
+HTERM). This program is an alternative that requires no extra
+software.
+=======
+kin). The usual solution is to install more software (Tiny, TSDOS,
+HTERM). This program is an alternative that requires no extra
+software.
+>>>>>>> refs/remotes/origin/main
 
 Given a .CO file, co2do creates a .DO file that the built-in tools can
 handle. The .DO file contains a BASIC loader that installs the .CO
 data to the correct memory address using a very fast machine language
 routine, saves the .CO file, and launches it.
 
+<<<<<<< HEAD
 Co2do is simple to use and quite quick. The most important limitation
 is that it currently creates quite large .DO files (+2K) which may
 not fit on smaller machines.
+||||||| 60b576f
+Co2do is simple to use and fast. The most important limitation is that
+it currently creates rather large .DO files (+2K) which may not fit on
+smaller machines.
+=======
+Co2do is simple to use and fast for both the end user and the
+developer. The most important limitation is that it currently creates
+rather large .DO files (+2K) which may not fit on smaller machines.
+>>>>>>> refs/remotes/origin/main
 
 ## Usage
 
@@ -57,16 +77,16 @@ chmod +x co2do
   without any extra software. (For example, `RUN "COM:88N1"`.) 
   
 * Includes the ^Z marker at the end of the .DO file so no software is
-  needed on your host computer, either. Anything that can write to the
-  serial port will work — Even the DOS "COPY" command!
+  needed on your host computer, either. Anything that can write a file
+  to the serial port will work — Even the DOS "COPY" command!
 
 * Once transferred, the BASIC loader writes the .CO to memory in less
   than a second using a machine language routine. (Previously, the same
   task took minutes in BASIC.)
 
 * Automatically CLEARs the correct space, SAVEMs the .CO file, and
-  CALLs the program. (Exception: NEC PCs can either BSAVE or EXEC but
-  not both).
+  CALLs the program. (Exception: NEC PCs do not currently EXEC the
+  program as BSAVE stops the BASIC loader.)
 
 * Inspired by Stephen Adolph's [efficient encoding scheme][bangcode]
   which increases storage size by at most 2 _x_ + _k_ (where _x_ is
@@ -160,16 +180,20 @@ frequently used codes (like NULL) will not need to be escaped.
 
 The main downside of co2do is that the filesize increases
 significantly and some .CO files may not fit. If your programs are not
-working on 8K machines, hackerb9 recommends investigating co2ba.
+working on 8K machines, hackerb9 recommends investigating BKW's co2ba, below.
 
 ### See also
 
 * **co2ba** Brian K. White includes in his dl2 project a very nice
   [co2ba.sh][co2ba] program which is similar in that it creates BASIC
-  loaders, but but has different features. It has been optimized for
-  space efficiency and is a good choice if you are tight on memory. It
-  also has more command line options, such as manually specifying the
-  loading address or the comment to be shown to the user.
+  loaders, but has different features. At the moment, it is slower
+  than hackerb9's co2do, but it has been optimized for space
+  efficiency and is a good choice if you are tight on memory. It also
+  sports many more options, such as manually specifying the loading
+  address or a comment to be shown to the user. You can even choose
+  older, less efficient encoding via environment variables, if you
+  wish. (Note: What Brian refers to as "!yEnc coding" is the same
+  thing as the [!-code][bangcode] used in hackerb9's co2do.)
 
 [co2ba]: https://github.com/bkw777/dl2/blob/master/co2ba.md
 

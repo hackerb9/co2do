@@ -193,7 +193,7 @@ emitnecvarptr() {
 	EOF
 }
 
-### BEGIN AUTOMATIC EMBED ### decode.asm.lst 2026-03-18 03:03:25
+### BEGIN AUTOMATIC EMBED ### decode.asm.lst 2026-03-22 09:54:33
 #### DO NOT EDIT! Added automatically by embedasm.
 decode() {
     cat <<-'EOT'

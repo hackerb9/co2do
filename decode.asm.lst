@@ -2,10 +2,11 @@
                         	;; string, copy the source string to the destination,
                         	;; processing !-escapes by replacing each '!' with the
                         	;; subsequent character with the high-bit flipped.
+                        	;; Optionally, rotate the character-set.
 
                         	;; Calling is a two step process. First, the destination
                         	;; address is sent from BASIC in HL by calling DCINIT.
-                        	;; Second, MAIN (= DCINIT+6) is called with the varptr of
+                        	;; Second, MAIN (= DCINIT+9) is called with the varptr of
                         	;; the source string in HL.
 
                         	;; The call to DCINIT also specifies a number in register A
@@ -23,7 +24,7 @@
                         	;;      20 Q=(destination buffer address)
                         	;; 	30 READ P$: IF P$="EOD" THEN END
                         	;;  	40 CALL DC, A, Q
-                        	;; 	50 CALL DC+6, 0, VARPTR(P$)
+                        	;; 	50 CALL DC+9, 0, VARPTR(P$)
                         	;; 	60 Q=Q+LEN(P$)
                         	;; 	70 GOTO 30
                         	;;
@@ -35,7 +36,7 @@
                         	;; 	15 A=(rotation offset or 0)
                         	;;  	20 CALL DC, A, (destination buffer address)
                         	;; 	30 READ P$: IF P$="EOD" THEN END
-                        	;; 	40 CALL DC+6, 0, VARPTR(P$)
+                        	;; 	40 CALL DC+9, 0, VARPTR(P$)
                         	;; 	50 GOTO 30
 
 0000                    	CPU 8085		; Build with asmx -w -e -l -b0 decode.asm
