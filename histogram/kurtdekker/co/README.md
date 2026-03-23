@@ -1,10 +1,10 @@
 # M100 Games by Kurt Dekker 
 
-Note: All games require [DUMP.CO][DUMP] to be loaded first. 
+Note: All games require [DUMP.CO][DUMP] to be LOADM'd first. 
 
-| File            | Description                              | Bytes |
-|-----------------|------------------------------------------|------:|
-| [DUMP][DUMP] | Screen refresh utility used by ALL games |   131 |
+| File         | Description                              | Bytes | Top   |
+|--------------|------------------------------------------|------:|-------|
+| [DUMP][DUMP] | Screen refresh utility used by ALL games |   131 | 60672 |
 
 [DUMP]: DUMP.CO
 
