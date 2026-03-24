@@ -3,43 +3,22 @@
 Convert a .CO (machine language) file to .DO (BASIC Loader) for easy download.
 
 Machine language programs (.CO files) cannot be downloaded over the
-serial port using the built-in software on a TRS-80 Model 100 (or
-<<<<<<< HEAD
-kin). The usual solution is to install more software ([Teeny][teeny],
+serial port using the built-in software on a TRS-80 Model 100 (or kin). The usual solution is to install more software ([Teeny][teeny],
 [TSDOS][tsdos], [TBACK][tback]). This program is an alternative that
 tries to make it as easy as possible for the end user.
 
 [teeny]: https://www.youtube.com/watch?v=H0xx9cOe97s
 [tsdos]: https://www.club100.org/library/doc/tsdos.html
 [tback]: https://bitchin100.com/wiki/index.php?title=TBACK
-||||||| 60b576f
-kin). The usual solution is to install more software (Teeny, TSDOS,
-HTERM). This program is an alternative that requires no extra
-software.
-=======
-kin). The usual solution is to install more software (Tiny, TSDOS,
-HTERM). This program is an alternative that requires no extra
-software.
->>>>>>> refs/remotes/origin/main
 
 Given a .CO file, co2do creates a .DO file that the built-in tools can
 handle. The .DO file contains a BASIC loader that installs the .CO
 data to the correct memory address using a very fast machine language
 routine, saves the .CO file, and launches it.
 
-<<<<<<< HEAD
-Co2do is simple to use and quite quick. The most important limitation
-is that it currently creates quite large .DO files (+2K) which may
-not fit on smaller machines.
-||||||| 60b576f
-Co2do is simple to use and fast. The most important limitation is that
-it currently creates rather large .DO files (+2K) which may not fit on
-smaller machines.
-=======
 Co2do is simple to use and fast for both the end user and the
 developer. The most important limitation is that it currently creates
 rather large .DO files (+2K) which may not fit on smaller machines.
->>>>>>> refs/remotes/origin/main
 
 ## Usage
 
