@@ -230,8 +230,8 @@ decode() {
     elif [[ $tandycharset == "cat" ]]; then
 	if [[ $input == *.CO ]]; then
 	    output=${input%.CO}.DO
-	elif [[ $input == *.co ]]; then
-	    output=${input%.co}.do
+	else
+	    output=${input%.*}.do
 	fi
     fi
     coname=$(basename "$output")
