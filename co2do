@@ -71,7 +71,7 @@ function main() {
 	    set -- "${@:1:LEN}"
 	fi
     fi
-    if (( TOP<62960 && TOP>32767 )); then clear=", $TOP"; else clear=""; fi
+    if (( TOP<62960 && TOP>33200 )); then clear=", $TOP"; else clear=""; fi
     # We'll be POKEing into and executing the fast M/L decoder
     # directly out of the space allocated for DC$, so we need to make
     # sure it doesn't move around in memory as BASIC is wont to do.
@@ -81,7 +81,7 @@ function main() {
 	30 DC$=SPACE\$(255)
 	40 GOSUB 12000: GOSUB 13000
 	50 IF FRE(0) < LN THEN ?"Insufficient space to save "NM$: Q$=CHR\$(34): C$=",":?"Please try NEW then SAVEM "Q$;NM$;Q$;C$;TP;C$;TP+LN;C$;EX: END
-	60 ?"Saving "NM$;:IF ID<>148 THEN SAVEM NM$,TP,TP+LN,EX ELSE BSAVE NM$,TP,LN,EX
+	60 '?"Saving "NM$;:IF ID<>148 THEN SAVEM NM$,TP,TP+LN,EX ELSE BSAVE NM$,TP,LN,EX
 	80 ?:?"Running "NM$:IF ID<>148 THEN CALL EX ELSE EXEC EX
 	90 END
 	EOF
