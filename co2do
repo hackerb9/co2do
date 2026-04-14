@@ -80,7 +80,7 @@ function main() {
 	20 TP=$((TOP)): LN=$LEN: EX=$((EXE)): RT=$((ROT)): ID=PEEK(1)
 	30 DC$=SPACE\$(255)
 	40 GOSUB 12000: GOSUB 13000
-	50 IF FRE(0) < LN THEN ?"Insufficient space to save "NM$: Q$=CHR\$(34): C$=",":?"Please try NEW then SAVEM "Q$;NM$;Q$;C$;TP;C$;TP+LN;C$;EX: END
+	50 IF FRE(0) < LN THEN ?"Insufficient space to save "NM$: Q$=CHR\$(34): C$=",":?"Please try NEW then SAVEM "Q$;NM$;Q$;C$;TP;C$;TP+LN;C$;EX
 	60 '?"Saving "NM$;:IF ID<>148 THEN SAVEM NM$,TP,TP+LN,EX ELSE BSAVE NM$,TP,LN,EX
 	80 ?:?"Running "NM$:IF ID<>148 THEN CALL EX ELSE EXEC EX
 	90 END
@@ -135,7 +135,7 @@ function emitmldecode() {
 
     cat <<-EOF
 	12000 'Fast loader
-	12010 IF PEEK(1)<>148 THEN DC=VARPTR(DC$): ELSE VY$="DC$": GOSUB 40000: DC=L+256*H
+	12010 IF ID<>148 THEN DC=VARPTR(DC$): ELSE VY$="DC$": GOSUB 40000: DC=L+256*H
 	12015 DX=PEEK(DC+1)+256*PEEK(DC+2): Q=DX
 	12020 READ X
 	12030 IF X=-1 THEN 12080
@@ -156,9 +156,9 @@ function emitbasicdecode() {
     # TP is the destination address ("TOP"), set by main().
     cat <<-"EOF"
 	13000 REM ?"Loading "NM$" ("LN" bytes) at "TP
-	13020 IF PEEK(1)<>148 THEN CALL DX, RT, TP: ELSE H=INT(TP/256): L=TP-H*256: POKE 63911, RT: POKE 63912, L: POKE 63913, H: EXEC DX
+	13020 IF ID<>148 THEN CALL DX, RT, TP: ELSE H=INT(TP/256): L=TP-H*256: POKE 63911, RT: POKE 63912, L: POKE 63913, H: EXEC DX
 	13030 READP$: IF P$="!!" GOTO 13080
-	13040 IF PEEK(1)<>148 THEN P=VARPTR(P$): CALL DX+9, 0, P: ELSE VY$="P$": GOSUB 40030: POKE 63912, L: POKE 63913, H: EXEC DX+9
+	13040 IF ID<>148 THEN P=VARPTR(P$): CALL DX+9, 0, P: ELSE VY$="P$": GOSUB 40030: POKE 63912, L: POKE 63913, H: EXEC DX+9
 	13060 GOTO 13030
 	13080 'All done
 	13090 ?:RETURN
@@ -228,10 +228,9 @@ decode() {
 	output="$2"
 	shift
     elif [[ $tandycharset == "cat" ]]; then
-	if [[ $input == *.CO ]]; then
-	    output=${input%.CO}.DO
-	else
-	    output=${input%.*}.do
+	output=${input%.*}.do
+	if [[ ! $input =~ [a-z] ]]; then
+	    output=${output@U}	# Uppercase .DO if input had no lowercase
 	fi
     fi
     coname=$(basename "$output")
@@ -247,7 +246,49 @@ outputfilter() {
     printf '\x1A'
 }
 
-main $(od -t u1 -v -An "$input") | $tandycharset | outputfilter > "$output"
+#allhex() {
+#     # Input is *decimal* version of input file. 
+#     # Return 0 (true) if all arguments consist of hexadecimal digits.
+#     # White space, colons, commas are allowed
+#     echo "$@" | tr -d ':, \r\n' | grep -q '[^A-Fa-f0-9]' || return 0
+#     return 1
+# }
+
+# hextoco() {
+#     # Given a plain text file of hexadecimal numbers on stdin, output
+#     # it as a binary file. This is useful for converting .HEX files
+#     # from the M100SIG which were uploaded in HXFER format.
+#     # 
+#     # Known Deficiencies:
+#     #
+#     # 1. This ought to allow dynamic relocation of the .CO file, the
+#     #    same as HXFER, but instead it just uses the default address.
+#     # 2. Should detect other HEX formats. In particular, the Intel Hex
+#     #    format, in which each line starts with an address (can be out
+#     #    of order) and ends with a checksum.
+#     # 3. Should do some sanity checks of TOP, LENGTH, and EXE values.
+#     mapfile data < <(echo "$@" | tr -d ',:\r\n')
+#     for line in "${data[@]}"; do
+# 	while read -n2 byte; do
+# 	    case ${#byte} in
+#      		2) printf '\x'$byte
+# 		   ;;
+# 		0) continue
+# 		   ;;
+# 		*) echo "Error. Expected 2 characters, got ${#byte}: ${byte@Q}.">&2
+# 		   ;;
+# 	    esac
+# 	done <<<"$line"
+#     done
+# }
+
+
+slurp=$(od -t u1 -v -An <"$input")
+#if allhex "$slurp"; then
+#    echo "Input was hexadecimal, converting to binary first." >&2
+#    slurp=$(hextoco "$slurp")
+#fi
+main $slurp | $tandycharset | outputfilter > "$output"
 err=${PIPESTATUS[0]}
 if (( err != 0 )); then
     echo "Exiting with error $err" >&2
