@@ -172,7 +172,7 @@ function emitbasicdecode() {
 emitnecvarptr() {
     # Shrunken version of Gary's VARPTR with results in 63912/3
     cat <<-EOF
-    	11000 RESTORE 40000
+    	11000 RESTORE 40500
 	11010 Q=64448: DX=Q: GOSUB 12100
 	11500 RESTORE: RETURN
 	40050 POKELB,201:POKEHB,251:EXEC64448
