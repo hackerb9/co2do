@@ -80,6 +80,7 @@ function main() {
 	20 TP=$((TOP)): LN=$LEN: EX=$((EXE)): RT=$((ROT)): ID=PEEK(1)
 	25 LB=63912:HB=LB+1
 	30 DC$=SPACE\$(255)
+	35 IF ID=148 THEN GOSUB 11000
 	40 GOSUB 12000: GOSUB 13000
 	50 IF FRE(0) < LN THEN ?"Insufficient space to save "NM$: Q$=CHR\$(34): C$=",":?"Please try NEW then SAVEM "Q$;NM$;Q$;C$;TP;C$;TP+LN;C$;EX
 	60 '?"Saving "NM$;:IF ID<>148 THEN SAVEM NM$,TP,TP+LN,EX ELSE BSAVE NM$,TP,LN,EX
@@ -137,15 +138,16 @@ function emitmldecode() {
     cat <<-EOF
 	12000 'Fast loader
 	12010 IF ID<>148 THEN DC=VARPTR(DC$): ELSE VY$="DC$": GOSUB 40000: DC=PEEK(LB)+256*PEEK(HB)
-	12015 DX=PEEK(DC+1)+256*PEEK(DC+2): Q=DX
-	12020 READ X
-	12030 IF X=-1 THEN 12080
-	12040 IF X=-7 THEN READ L: READ H: A=H*256+L+DX: X=INT(A/256): L=A-X*256: POKE Q, L: Q=Q+1
-	12050 POKE Q, X
-	12060 Q=Q+1
-	12070 GOTO 12020
-	12080 POKE DC, Q-DX: 'Set length of DC$
-	12090 RETURN
+	12020 DX=PEEK(DC+1)+256*PEEK(DC+2): Q=DX
+	12100 'Read data until -1, POKEing into Q++.
+	12120 READ X
+	12130 IF X=-1 THEN 12180
+	12140 IF X=-7 THEN READ L: READ H: A=H*256+L+DX: X=INT(A/256): L=A-X*256: POKE Q, L: Q=Q+1
+	12150 POKE Q, X
+	12160 Q=Q+1
+	12170 GOTO 12120
+	12180 POKE DC, Q-DX: 'Set length of DC$
+	12190 RETURN
 	EOF
     decode
 }
@@ -171,13 +173,15 @@ function emitbasicdecode() {
 emitnecvarptr() {
     # Shrunken version of Gary's VARPTR with results in 63912/3
     cat <<-EOF
-	40000 A=64448
-	40010 POKEA,205:POKEA+1,175:POKEA+2,73:POKEA+3,235
-	40020 POKEA+4,58:POKEA+5,139:POKEA+6,250:POKEA+7,201
+    	11000 RESTORE 40000
+	11010 Q=64448: DX=Q: GOSUB 12100
+	11500 RESTORE: RETURN
+	40000 '
 	40030 A=64457
 	40040 FORH=1TOLEN(VY$):POKEA,ASC(MID\$(VY$,H,1)):A=A+1:NEXT:POKEA,0:POKE64464,0
 	40050 POKELB,201:POKEHB,251:EXEC64448
 	40070 RETURN
+	40500 DATA 205, 175, 73, 235, 58, 139, 250, 201, -1
 	EOF
 }
 
@@ -189,7 +193,7 @@ emitfullnecvarptr() {
     #   100 A$="This is a sample string."
     #   110 VY$="A$":GOSUB 40000
     #   120 PRINT "VARPTR of ";VY$;" is ";L+(H*256)
-    # NOTES From hackerb9: 
+    # NOTES From hackerb9:
     # * Minor modifications to use less RAM and string space. --b9 2026
     # * M/L routine placed at 64448 for performing VARPTR.
     # * Address 64457 is an 8-byte, NULL terminated copy of VY$.
@@ -263,7 +267,7 @@ outputfilter() {
 }
 
 #allhex() {
-#     # Input is *decimal* version of input file. 
+#     # Input is *decimal* version of input file.
 #     # Return 0 (true) if all arguments consist of hexadecimal digits.
 #     # White space, colons, commas are allowed
 #     echo "$@" | tr -d ':, \r\n' | grep -q '[^A-Fa-f0-9]' || return 0
@@ -274,7 +278,7 @@ outputfilter() {
 #     # Given a plain text file of hexadecimal numbers on stdin, output
 #     # it as a binary file. This is useful for converting .HEX files
 #     # from the M100SIG which were uploaded in HXFER format.
-#     # 
+#     #
 #     # Known Deficiencies:
 #     #
 #     # 1. This ought to allow dynamic relocation of the .CO file, the
