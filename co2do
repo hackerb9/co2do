@@ -135,7 +135,7 @@ function emitmldecode() {
 
     cat <<-EOF
 	12000 'Fast loader
-	12010 IF ID<>148 THEN DC=VARPTR(DC$): ELSE VY$="DC$": GOSUB 40000: DC=L+256*H
+	12010 IF ID<>148 THEN DC=VARPTR(DC$): ELSE VY$="DC$": GOSUB 40000: DC=PEEK(63912)+256*PEEK(63913)
 	12015 DX=PEEK(DC+1)+256*PEEK(DC+2): Q=DX
 	12020 READ X
 	12030 IF X=-1 THEN 12080
@@ -154,11 +154,13 @@ function emitbasicdecode() {
     # DX is the start address of decode.asm, set by emitmlcode().
     # RT is the amount of rotation for the character set.
     # TP is the destination address ("TOP"), set by main().
-    cat <<-"EOF"
+    local -i H=$((TOP/256))
+    local -i L=$((TOP-H*256))
+    cat <<-EOF
 	13000 REM ?"Loading "NM$" ("LN" bytes) at "TP
-	13020 IF ID<>148 THEN CALL DX, RT, TP: ELSE H=INT(TP/256): L=TP-H*256: POKE 63911, RT: POKE 63912, L: POKE 63913, H: EXEC DX
+	13020 IF ID<>148 THEN CALL DX, RT, TP: ELSE POKE 63911, RT: POKE 63912, $L: POKE 63913, $H: EXEC DX
 	13030 READP$: IF P$="!!" GOTO 13080
-	13040 IF ID<>148 THEN P=VARPTR(P$): CALL DX+9, 0, P: ELSE VY$="P$": GOSUB 40030: POKE 63912, L: POKE 63913, H: EXEC DX+9
+	13040 IF ID<>148 THEN P=VARPTR(P$): CALL DX+9, 0, P: ELSE VY$="P$": GOSUB 40030: EXEC DX+9
 	13060 GOTO 13030
 	13080 'All done
 	13090 ?:RETURN
@@ -166,6 +168,20 @@ function emitbasicdecode() {
 }
 
 emitnecvarptr() {
+    # Shrunken version of Gary's VARPTR with hardcoded results
+    cat <<-EOF
+	40000 A=64448
+	40010 POKEA,205:POKEA+1,175:POKEA+2,73:POKEA+3,235
+	40020 POKEA+4,58:POKEA+5,139:POKEA+6,250:POKEA+7,201
+	40030 IFVY$=""THENPRINT"VY$ not defined!":STOP
+	40035 A=64457 ' HL register for EXEC = 201/251
+	40040 FORH=1TOLEN(VY$):POKEA,ASC(MID\$(VY$,H,1)):A=A+1:NEXT:POKEA,0:POKE64464,0
+	40050 POKE63912,201:POKE63913,251:EXEC64448
+	40070 RETURN
+	EOF
+}
+
+emitfullnecvarptr() {
     # VARPTR for NEC 8201/8300 by Gary Weber of web8201.net
     # Entry: VY$ must contain the name of variable of interest
     # Exit: H & L contain variable's address, TY contains type
@@ -183,7 +199,7 @@ emitnecvarptr() {
 	39999 'VARPTR by Gary Weber for NEC 8201/8300
 	40000 A=64448
 	40010 POKEA,205:POKEA+1,175:POKEA+2,73:POKEA+3,235
-	40020 POKEA+4,58:POKEA+5,139:POKEA+6,250:POKEA+8,201
+	40020 POKEA+4,58:POKEA+5,139:POKEA+6,250:POKEA+7,201
 	40030 IFVY$=""THENPRINT"VY$ not defined!":STOP
 	40035 A=64457 ' HL register for EXEC = 201/251
 	40040 FORH=1TOLEN(VY$):POKEA,ASC(MID\$(VY$,H,1)):A=A+1:NEXT:POKEA,0:POKE64464,0
