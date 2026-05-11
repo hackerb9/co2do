@@ -73,13 +73,13 @@ function main() {
     fi
     if (( TOP<62960 && TOP>33200 )); then clear=", $TOP"; else clear=""; fi
     # We'll be POKEing into and executing the fast M/L decoder
-    # directly out of the space allocated for DC$, so we need to make
+    # directly out of the space allocated for D$, so we need to make
     # sure it doesn't move around in memory as BASIC is wont to do.
     cat <<-EOF
 	10 MAXFILES=0: CLEAR 256$clear: NM$="${coname}"
 	20 TP=$((TOP)): LN=$LEN: EX=$((EXE)): RT=$((ROT)): ID=PEEK(1)
 	25 LB=63912:HB=LB+1
-	30 DC$=SPACE\$(255)
+	30 D$=SPACE\$(255)
 	35 IF ID=148 THEN GOSUB 11000
 	40 GOSUB 12000: GOSUB 13000
 	50 IF FRE(0) < LN THEN ?"Insufficient space to save "NM$: Q$=CHR\$(34): C$=",":?"Please try NEW then SAVEM "Q$;NM$;Q$;C$;TP;C$;TP+LN;C$;EX
@@ -121,7 +121,7 @@ function emitmldecode() {
     # Sets the BASIC variable DX to the address of the routine.
     # (See routine starting at lines 13000 for example usage.)
     #
-    # NOTA BENE: DX is actually the address of DC$'s buffer. The
+    # NOTA BENE: DX is actually the address of D$'s buffer. The
     # machine language is POKEd directly into and executed from the
     # string, so manipulation of other string variables in BASIC can
     # foul it up. (READ is okay as it merely sets variables to point
@@ -137,7 +137,7 @@ function emitmldecode() {
 
     cat <<-EOF
 	12000 'Fast loader
-	12010 IF ID<>148 THEN DC=VARPTR(DC$): ELSE GOSUB 40050: DC=PEEK(LB)+256*PEEK(HB)
+	12010 IF ID<>148 THEN DC=VARPTR(D$): ELSE GOSUB 40050: DC=PEEK(LB)+256*PEEK(HB)
 	12020 DX=PEEK(DC+1)+256*PEEK(DC+2): Q=DX
 	12100 'Read data until -1, POKEing into Q++.
 	12120 READ X
@@ -146,7 +146,7 @@ function emitmldecode() {
 	12150 POKE Q, X
 	12160 Q=Q+1
 	12170 GOTO 12120
-	12180 POKE DC, Q-DX: 'Set length of DC$
+	12180 POKE DC, Q-DX: 'Set length of D$
 	12190 RETURN
 	EOF
     decode
@@ -163,7 +163,7 @@ function emitbasicdecode() {
 	13000 REM ?"Loading "NM$" ("LN" bytes) at "TP
 	13020 IF ID<>148 THEN CALL DX, RT, TP: ELSE POKE LB-1, RT: POKE LB, $L: POKE HB, $H: EXEC DX
 	13030 READP$: IF P$="!!" GOTO 13080
-	13040 IF ID<>148 THEN P=VARPTR(P$): CALL DX+9, 0, P: ELSE VY$="P$": GOSUB 40030: EXEC DX+9
+	13040 IF ID<>148 THEN P=VARPTR(P$): CALL DX+9, 0, P: ELSE POKE64457,80: GOSUB 40050: EXEC DX+9
 	13060 GOTO 13030
 	13080 'All done
 	13090 ?:RETURN
@@ -176,13 +176,10 @@ emitnecvarptr() {
     	11000 RESTORE 40000
 	11010 Q=64448: DX=Q: GOSUB 12100
 	11500 RESTORE: RETURN
-	40000 '
-	40030 A=64457
-	40040 FORH=1TOLEN(VY$):POKEA,ASC(MID\$(VY$,H,1)):A=A+1:NEXT:POKEA,0:POKE64464,0
 	40050 POKELB,201:POKEHB,251:EXEC64448
 	40070 RETURN
 	40500 DATA 205, 175, 73, 235, 58, 139, 250, 201
-	40510 DATA 0, 68, 67, 36, 0, 80, 36, 0, -1
+	40510 DATA 0, 68, 36, 0, -1
 	EOF
 }
 
